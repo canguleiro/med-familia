@@ -1,564 +1,581 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  Users, 
-  Stethoscope, 
-  Activity, 
-  Pill, 
-  Settings, 
-  Search, 
-  Trash2, 
-  ChevronRight,
-  AlertCircle,
-  Calendar,
-  Save,
-  Clock,
-  FileText
-} from 'lucide-react';
-
-// Componente Principal
-export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Configurações do Google Sheets
-  const [sheetConfig, setSheetConfig] = useState({
-    scriptUrl: '', // URL do Web App gerada no Apps Script
-  });
-
-  // Estados dos Dados
-  const [pacientes, setPacientes] = useState([]);
-  const [medicos, setMedicos] = useState([]);
-  const [patologias, setPatologias] = useState([]);
-  const [tratamentos, setTratamentos] = useState([]);
-
-  // Carregar dados iniciais do LocalStorage (ou Sheets se configurado)
-  useEffect(() => {
-    const savedPacientes = localStorage.getItem('med_pacientes');
-    const savedMedicos = localStorage.getItem('med_medicos');
-    const savedPatologias = localStorage.getItem('med_patologias');
-    const savedTratamentos = localStorage.getItem('med_tratamentos');
-    const savedConfig = localStorage.getItem('med_config');
-
-    if (savedPacientes) setPacientes(JSON.parse(savedPacientes));
-    if (savedMedicos) setMedicos(JSON.parse(savedMedicos));
-    if (savedPatologias) setPatologias(JSON.parse(savedPatologias));
-    if (savedTratamentos) setTratamentos(JSON.parse(savedTratamentos));
-    if (savedConfig) setSheetConfig(JSON.parse(savedConfig));
-  }, []);
-
-  // Salvar no LocalStorage sempre que houver mudanças
-  useEffect(() => {
-    localStorage.setItem('med_pacientes', JSON.stringify(pacientes));
-    localStorage.setItem('med_medicos', JSON.stringify(medicos));
-    localStorage.setItem('med_patologias', JSON.stringify(patologias));
-    localStorage.setItem('med_tratamentos', JSON.stringify(tratamentos));
-    localStorage.setItem('med_config', JSON.stringify(sheetConfig));
-  }, [pacientes, medicos, patologias, tratamentos, sheetConfig]);
-
-  // Função para sincronizar com Google Sheets
-  const syncWithGoogle = async (action, type, data) => {
-    if (!sheetConfig.scriptUrl) {
-      console.warn("URL do Google Script não configurada.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch(sheetConfig.scriptUrl, {
-        method: 'POST',
-        mode: 'no-cors', // Necessário para Google Apps Script
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, type, data })
-      });
-      // Como usamos no-cors, não conseguimos ler a resposta facilmente, 
-      // mas os dados são enviados.
-    } catch (error) {
-      console.error("Erro na sincronização:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Funções de Cadastro
-  const addPaciente = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const novo = {
-      id: Date.now().toString(),
-      nome: formData.get('nome'),
-      nascimento: formData.get('nascimento'),
-      contato: formData.get('contato'),
-      historico: formData.get('historico'),
-    };
-    const updated = [...pacientes, novo];
-    setPacientes(updated);
-    syncWithGoogle('add', 'pacientes', novo);
-    e.target.reset();
-  };
-
-  const addMedico = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const novo = {
-      id: Date.now().toString(),
-      nome: formData.get('nome'),
-      crm: formData.get('crm'),
-      especialidade: formData.get('especialidade'),
-    };
-    const updated = [...medicos, novo];
-    setMedicos(updated);
-    syncWithGoogle('add', 'medicos', novo);
-    e.target.reset();
-  };
-
-  const addPatologia = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const novo = {
-      id: Date.now().toString(),
-      nome: formData.get('nome'),
-      sintomas: formData.get('sintomas'),
-      diagnostico: formData.get('diagnostico'),
-    };
-    const updated = [...patologias, novo];
-    setPatologias(updated);
-    syncWithGoogle('add', 'patologias', novo);
-    e.target.reset();
-  };
-
-  const addTratamento = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const novo = {
-      id: Date.now().toString(),
-      pacienteId: formData.get('pacienteId'),
-      medicoId: formData.get('medicoId'),
-      patologiaId: formData.get('patologiaId'),
-      remedio: formData.get('remedio'),
-      vencimento: formData.get('vencimento'),
-      composicao: formData.get('composicao'),
-      ativo: formData.get('ativo'),
-      dosagem: formData.get('dosagem'),
-      posologia: formData.get('posologia'),
-      duracao: formData.get('duracao'),
-      dataInicio: new Date().toISOString().split('T')[0],
-      status: 'ativo'
-    };
-    const updated = [...tratamentos, novo];
-    setTratamentos(updated);
-    syncWithGoogle('add', 'tratamentos', novo);
-    e.target.reset();
-  };
-
-  const deleteItem = (id, type, list, setList) => {
-    const updated = list.filter(item => item.id !== id);
-    setList(updated);
-    syncWithGoogle('delete', type, { id });
-  };
-
-  // Filtros de busca
-  const filteredTratamentos = tratamentos.filter(t => {
-    const pac = pacientes.find(p => p.id === t.pacienteId)?.nome || '';
-    return pac.toLowerCase().includes(searchTerm.toLowerCase()) || t.remedio.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
-  // Renderização de Telas
-  const renderDashboard = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard icon={<Users className="text-blue-500" />} label="Pacientes" value={pacientes.length} />
-        <StatCard icon={<Stethoscope className="text-green-500" />} label="Médicos" value={medicos.length} />
-        <StatCard icon={<Activity className="text-red-500" />} label="Patologias" value={patologias.length} />
-        <StatCard icon={<Pill className="text-purple-500" />} label="Tratamentos" value={tratamentos.length} />
-      </div>
-
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-indigo-500" />
-          Tratamentos Recentes
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-slate-500 border-b border-slate-100 text-sm">
-                <th className="pb-3 font-medium">Paciente</th>
-                <th className="pb-3 font-medium">Remédio</th>
-                <th className="pb-3 font-medium">Médico</th>
-                <th className="pb-3 font-medium">Vencimento</th>
-                <th className="pb-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {tratamentos.slice(-5).reverse().map(t => (
-                <tr key={t.id} className="text-sm hover:bg-slate-50 transition-colors">
-                  <td className="py-3 font-medium">{pacientes.find(p => p.id === t.pacienteId)?.nome}</td>
-                  <td className="py-3">{t.remedio}</td>
-                  <td className="py-3">{medicos.find(m => m.id === t.medicoId)?.nome}</td>
-                  <td className="py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs ${new Date(t.vencimento) < new Date() ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
-                      {new Date(t.vencimento).toLocaleDateString()}
-                    </span>
-                  </td>
-                  <td className="py-3">
-                    <span className="capitalize px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">{t.status}</span>
-                  </td>
-                </tr>
-              ))}
-              {tratamentos.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="py-10 text-center text-slate-400">Nenhum tratamento registrado.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPacientes = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-fit">
-        <h2 className="text-lg font-bold mb-4">Cadastrar Paciente</h2>
-        <form onSubmit={addPaciente} className="space-y-4">
-          <input name="nome" placeholder="Nome Completo" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
-          <input name="nascimento" type="date" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
-          <input name="contato" placeholder="Telefone / Contato" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-          <textarea name="historico" placeholder="Breve histórico médico" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" rows="3" />
-          <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
-            <Save className="w-4 h-4" /> Salvar Paciente
-          </button>
-        </form>
-      </div>
-      <div className="lg:col-span-2 space-y-4">
-        {pacientes.map(p => (
-          <div key={p.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center group">
-            <div>
-              <h3 className="font-bold text-slate-800">{p.nome}</h3>
-              <p className="text-xs text-slate-500">Nascimento: {new Date(p.nascimento).toLocaleDateString()} | Contato: {p.contato}</p>
-            </div>
-            <button onClick={() => deleteItem(p.id, 'pacientes', pacientes, setPacientes)} className="text-slate-300 hover:text-red-500 transition-colors p-2">
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
-        ))}
-        {pacientes.length === 0 && <EmptyState text="Nenhum paciente cadastrado" />}
-      </div>
-    </div>
-  );
-
-  const renderMedicos = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-fit">
-        <h2 className="text-lg font-bold mb-4">Cadastrar Médico</h2>
-        <form onSubmit={addMedico} className="space-y-4">
-          <input name="nome" placeholder="Nome do Médico" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required />
-          <input name="crm" placeholder="CRM" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required />
-          <input name="especialidade" placeholder="Especialidade" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required />
-          <button type="submit" className="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2">
-            <Save className="w-4 h-4" /> Salvar Médico
-          </button>
-        </form>
-      </div>
-      <div className="lg:col-span-2 space-y-4">
-        {medicos.map(m => (
-          <div key={m.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center">
-            <div>
-              <h3 className="font-bold text-slate-800">{m.nome}</h3>
-              <p className="text-xs text-slate-500">CRM: {m.crm} | {m.especialidade}</p>
-            </div>
-            <button onClick={() => deleteItem(m.id, 'medicos', medicos, setMedicos)} className="text-slate-300 hover:text-red-500 transition-colors p-2">
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
-        ))}
-        {medicos.length === 0 && <EmptyState text="Nenhum médico cadastrado" />}
-      </div>
-    </div>
-  );
-
-  const renderPatologias = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-fit">
-        <h2 className="text-lg font-bold mb-4">Cadastrar Patologia</h2>
-        <form onSubmit={addPatologia} className="space-y-4">
-          <input name="nome" placeholder="Nome da Patologia (ex: Hipertensão)" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none" required />
-          <input name="sintomas" placeholder="Principais Sintomas" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none" />
-          <textarea name="diagnostico" placeholder="Critérios de diagnóstico" className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none" rows="3" />
-          <button type="submit" className="w-full bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2">
-            <Save className="w-4 h-4" /> Salvar Patologia
-          </button>
-        </form>
-      </div>
-      <div className="lg:col-span-2 space-y-4">
-        {patologias.map(p => (
-          <div key={p.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center">
-            <div>
-              <h3 className="font-bold text-slate-800">{p.nome}</h3>
-              <p className="text-xs text-slate-500">Sintomas: {p.sintomas || 'Não informados'}</p>
-            </div>
-            <button onClick={() => deleteItem(p.id, 'patologias', patologias, setPatologias)} className="text-slate-300 hover:text-red-500 transition-colors p-2">
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
-        ))}
-        {patologias.length === 0 && <EmptyState text="Nenhuma patologia cadastrada" />}
-      </div>
-    </div>
-  );
-
-  const renderTratamentos = () => (
-    <div className="space-y-6">
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h2 className="text-xl font-bold">Gestão de Tratamentos</h2>
-          <div className="relative w-full md:w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por paciente ou remédio..." 
-              className="w-full pl-9 p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Formulário */}
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h3 className="font-bold mb-4 text-sm uppercase text-slate-500 tracking-wider">Novo Tratamento</h3>
-            <form onSubmit={addTratamento} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <select name="pacienteId" className="p-2 border rounded-lg outline-none text-sm" required>
-                  <option value="">Selecionar Paciente</option>
-                  {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-                </select>
-                <select name="medicoId" className="p-2 border rounded-lg outline-none text-sm" required>
-                  <option value="">Selecionar Médico</option>
-                  {medicos.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
-                </select>
-              </div>
-              <select name="patologiaId" className="w-full p-2 border rounded-lg outline-none text-sm" required>
-                <option value="">Selecionar Patologia</option>
-                {patologias.map(pat => <option key={pat.id} value={pat.id}>{pat.nome}</option>)}
-              </select>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input name="remedio" placeholder="Nome do Remédio" className="p-2 border rounded-lg outline-none text-sm" required />
-                <div className="flex flex-col">
-                  <label className="text-[10px] text-slate-500 ml-1">Vencimento do Medicamento</label>
-                  <input name="vencimento" type="date" className="p-2 border rounded-lg outline-none text-sm" required />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input name="composicao" placeholder="Composição" className="p-2 border rounded-lg outline-none text-sm" />
-                <input name="ativo" placeholder="Princípio Ativo" className="p-2 border rounded-lg outline-none text-sm" />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input name="dosagem" placeholder="Dosagem (ex: 500mg)" className="p-2 border rounded-lg outline-none text-sm" />
-                <input name="posologia" placeholder="Posologia (ex: 8/8h)" className="p-2 border rounded-lg outline-none text-sm" />
-                <input name="duracao" placeholder="Duração (ex: 7 dias)" className="p-2 border rounded-lg outline-none text-sm" />
-              </div>
-
-              <button type="submit" className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2 font-bold transition-all">
-                <Plus className="w-5 h-5" /> Iniciar Tratamento
-              </button>
-            </form>
-          </div>
-
-          {/* Lista de Tratamentos */}
-          <div className="space-y-4">
-            <h3 className="font-bold mb-2 text-sm uppercase text-slate-500 tracking-wider">Histórico de Prescrições</h3>
-            {filteredTratamentos.map(t => (
-              <div key={t.id} className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-1 h-full bg-purple-500"></div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-bold text-slate-800">{t.remedio} - {t.dosagem}</h4>
-                    <p className="text-xs font-medium text-purple-600">Para: {pacientes.find(p => p.id === t.pacienteId)?.nome}</p>
-                    <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-slate-500">
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {t.posologia}</span>
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {t.duracao}</span>
-                      <span className="flex items-center gap-1"><Stethoscope className="w-3 h-3" /> Dr. {medicos.find(m => m.id === t.medicoId)?.nome}</span>
-                      <span className="flex items-center gap-1"><Activity className="w-3 h-3" /> {patologias.find(p => p.id === t.patologiaId)?.nome}</span>
-                    </div>
-                  </div>
-                  <button onClick={() => deleteItem(t.id, 'tratamentos', tratamentos, setTratamentos)} className="text-slate-300 hover:text-red-500">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                {new Date(t.vencimento) < new Date() && (
-                  <div className="mt-3 bg-red-50 border border-red-100 p-2 rounded text-[10px] text-red-600 flex items-center gap-2">
-                    <AlertCircle className="w-3 h-3" /> ATENÇÃO: Remédio vencido no estoque!
-                  </div>
-                )}
-              </div>
-            ))}
-            {filteredTratamentos.length === 0 && <EmptyState text="Nenhum tratamento encontrado" />}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderConfig = () => (
-    <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-100">
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-        <Settings className="w-6 h-6 text-slate-600" />
-        Configurações do Banco de Dados
-      </h2>
-      <div className="space-y-6">
-        <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg text-blue-800 text-sm">
-          <p className="font-bold mb-2">Como integrar com o Google Sheets:</p>
-          <ol className="list-decimal ml-4 space-y-1">
-            <li>Crie uma nova planilha no seu Google Drive.</li>
-            <li>Vá em <b>Extensões {" > "} Apps Script</b>.</li>
-            <li>Cole o código fornecido abaixo da pré-visualização.</li>
-            <li>Clique em <b>Implantar {" > "} Nova implantação</b>.</li>
-            <li>Selecione "App da Web", execute como "Você" e acesso "Qualquer pessoa".</li>
-            <li>Copie a URL gerada e cole no campo abaixo.</li>
-          </ol>
-        </div>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MedFamília - Gestão de Saúde</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: contain;
+        }
+        .active-nav-mobile { color: #4f46e5; border-top: 2px solid #4f46e5; }
+        .hidden { display: none !important; }
+        .medicine-row { animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        input, select, textarea { font-size: 16px !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">URL do Google Apps Script</label>
-          <div className="flex gap-2">
-            <input 
-              type="text" 
-              className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
-              placeholder="https://script.google.com/macros/s/.../exec"
-              value={sheetConfig.scriptUrl}
-              onChange={(e) => setSheetConfig({...sheetConfig, scriptUrl: e.target.value})}
-            />
-            <button 
-              onClick={() => alert("Configuração salva com sucesso!")}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
-            >
-              Salvar
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); transition: opacity 0.3s; }
+        .chip-active { background-color: #4f46e5 !important; color: white !important; transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-medium">
+
+    <div class="min-h-screen flex flex-col md:flex-row">
+        
+        <!-- SIDEBAR DESKTOP -->
+        <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col sticky top-0 h-screen p-6">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i data-lucide="heart-pulse" class="text-white w-6 h-6"></i>
+                </div>
+                <span class="font-bold text-xl text-indigo-900 tracking-tight">MedFamília</span>
+            </div>
+            <nav class="space-y-2">
+                <button onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-semibold">
+                    <i data-lucide="home" class="w-5 h-5"></i> Início
+                </button>
+                <button onclick="switchTab('farmacia')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-semibold">
+                    <i data-lucide="pill" class="w-5 h-5"></i> Farmácia
+                </button>
+                <button onclick="switchTab('config')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-semibold">
+                    <i data-lucide="settings" class="w-5 h-5"></i> Configuração
+                </button>
+            </nav>
+        </aside>
+
+        <!-- NAVEGAÇÃO INFERIOR MOBILE -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center z-50 h-16 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <button onclick="switchTab('dashboard')" id="m-nav-dashboard" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-14 h-full active-nav-mobile transition-all">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Início</span>
             </button>
-          </div>
-        </div>
+            <button onclick="switchTab('farmacia')" id="m-nav-farmacia" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-14 h-full transition-all">
+                <i data-lucide="pill" class="w-5 h-5"></i>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Farmácia</span>
+            </button>
+            
+            <div class="relative">
+                <button onclick="toggleActionMenu()" class="bg-indigo-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 -mt-8 active:scale-90 transition-transform">
+                    <i data-lucide="plus" class="w-6 h-6"></i>
+                </button>
+                <div id="action-menu" class="hidden absolute bottom-20 left-1/2 -translate-x-1/2 w-56 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col z-[60]">
+                    <button onclick="openAction('tratamento')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 border-b border-slate-50"><i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> Novo Tratamento</button>
+                    <button onclick="openAction('paciente')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 border-b border-slate-50"><i data-lucide="user-plus" class="w-4 h-4 text-blue-500"></i> Membro da Família</button>
+                    <button onclick="openAction('medico')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 border-b border-slate-50"><i data-lucide="stethoscope" class="w-4 h-4 text-green-500"></i> Médico</button>
+                    <button onclick="openAction('patologia')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50"><i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Patologia</button>
+                </div>
+            </div>
 
-        <div className="pt-6 border-t border-slate-100">
-          <h3 className="font-bold text-slate-800 mb-4">Exportar Dados Locais</h3>
-          <button 
-            onClick={() => {
-              const data = { pacientes, medicos, patologias, tratamentos };
-              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'backup_med_manager.json';
-              a.click();
-            }}
-            className="flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors"
-          >
-            <FileText className="w-5 h-5" />
-            Baixar Backup (JSON)
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex text-slate-800 font-sans">
-      {/* Sidebar - Mobile/Desktop */}
-      <aside className="w-20 md:w-64 bg-white border-r border-slate-200 flex flex-col items-center md:items-stretch transition-all">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Pill className="text-white w-5 h-5" />
-          </div>
-          <span className="font-bold text-xl hidden md:block tracking-tight text-blue-900">MedControl</span>
-        </div>
-
-        <nav className="flex-1 px-2 py-4 space-y-2">
-          <NavItem active={activeTab === 'dashboard'} icon={<Activity />} label="Início" onClick={() => setActiveTab('dashboard')} />
-          <NavItem active={activeTab === 'pacientes'} icon={<Users />} label="Pacientes" onClick={() => setActiveTab('pacientes')} />
-          <NavItem active={activeTab === 'medicos'} icon={<Stethoscope />} label="Médicos" onClick={() => setActiveTab('medicos')} />
-          <NavItem active={activeTab === 'patologias'} icon={<AlertCircle />} label="Patologias" onClick={() => setActiveTab('patologias')} />
-          <NavItem active={activeTab === 'tratamentos'} icon={<Pill />} label="Tratamentos" onClick={() => setActiveTab('tratamentos')} />
-          <div className="pt-4 mt-4 border-t border-slate-100">
-            <NavItem active={activeTab === 'config'} icon={<Settings />} label="Configuração" onClick={() => setActiveTab('config')} />
-          </div>
+            <button onclick="switchTab('paciente')" id="m-nav-paciente" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-14 h-full transition-all">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Membros</span>
+            </button>
+            <button onclick="switchTab('config')" id="m-nav-config" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-14 h-full transition-all">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Ajustes</span>
+            </button>
         </nav>
 
-        <div className="p-4 border-t border-slate-100 hidden md:block">
-          <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl">
-            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold">ADM</div>
-            <div>
-              <p className="text-xs font-bold">Usuário Logado</p>
-              <p className="text-[10px] text-slate-500">Perfil: Administrador</p>
+        <main class="flex-1 bg-slate-50 pb-24 md:pb-0 overflow-y-auto h-screen">
+            
+            <div class="md:hidden bg-white px-6 py-5 flex flex-col gap-1 sticky top-0 z-40 border-b border-slate-50">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-extrabold text-indigo-950 tracking-tight">MedFamília</h1>
+                    <div id="sync-indicator" class="hidden">
+                        <div class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                </div>
+                <p id="sub-header-text" class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Histórico de Saúde</p>
             </div>
-          </div>
+
+            <div class="p-6">
+                <!-- TELA INICIAL (DASHBOARD) -->
+                <div id="tab-dashboard" class="tab-content space-y-6">
+                    <!-- Chips de Pacientes com Flex-Wrap para Mobile -->
+                    <div class="flex flex-wrap gap-2" id="patient-chips-container"></div>
+                    <div class="space-y-4" id="patient-treatments-view"></div>
+                </div>
+
+                <!-- TELA: FARMÁCIA (LISTA DE REMÉDIOS) -->
+                <div id="tab-farmacia" class="tab-content hidden max-w-lg mx-auto space-y-6">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input id="search-pharmacy" oninput="renderPharmacy()" placeholder="Pesquisar remédio..." class="w-full pl-11 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div id="pharmacy-list" class="space-y-3">
+                        <!-- Lista gerada via JS -->
+                    </div>
+                </div>
+
+                <!-- FORMULÁRIOS (Membro, Médico, Patologia, Tratamento) -->
+                <div id="tab-paciente" class="tab-content hidden max-w-lg mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+                        <h2 class="font-bold text-lg mb-6 text-indigo-900">Gerir Família</h2>
+                        <form id="form-paciente" class="space-y-4">
+                            <input type="hidden" name="id">
+                            <input name="nome" placeholder="Nome" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
+                            <input name="nascimento" type="date" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
+                            <textarea name="historico" placeholder="Notas importantes..." class="w-full p-4 bg-slate-50 rounded-2xl outline-none" rows="3"></textarea>
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Guardar</button>
+                                <button type="button" onclick="cancelEdit('paciente')" class="px-6 bg-slate-100 text-slate-400 rounded-2xl font-bold">X</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="list-pacientes" class="space-y-2"></div>
+                </div>
+
+                <!-- (Outros formulários de Médico e Patologia omitidos por brevidade, mantendo a lógica funcional do estado anterior) -->
+                <div id="tab-medico" class="tab-content hidden max-w-lg mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100"><h2 class="font-bold text-lg mb-6">Médico</h2><form id="form-medico" class="space-y-4"><input type="hidden" name="id"><input name="nome" placeholder="Nome" class="w-full p-4 bg-slate-50 rounded-2xl" required><input name="especialidade" placeholder="Especialidade" class="w-full p-4 bg-slate-50 rounded-2xl" required><input name="contato" placeholder="Contacto" class="w-full p-4 bg-slate-50 rounded-2xl"><div class="flex gap-2"><button type="submit" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar</button></div></form></div><div id="list-medicos" class="space-y-2"></div></div>
+                <div id="tab-patologia" class="tab-content hidden max-w-lg mx-auto space-y-6"><div class="bg-white p-6 rounded-[32px] border border-slate-100"><h2 class="font-bold text-lg mb-6">Patologia</h2><form id="form-patologia" class="space-y-4"><input type="hidden" name="id"><input name="nome" placeholder="Nome" class="w-full p-4 bg-slate-50 rounded-2xl" required><textarea name="sintomas" placeholder="Sintomas" class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea><textarea name="diagnostico" placeholder="Diagnóstico" class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea><div class="flex gap-2"><button type="submit" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar</button></div></form></div><div id="list-patologias" class="space-y-2"></div></div>
+
+                <div id="tab-tratamento" class="tab-content hidden max-w-lg mx-auto">
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100 text-slate-800">
+                        <h3 class="font-bold text-lg mb-6 text-indigo-900">Novo Tratamento</h3>
+                        <form id="form-tratamento" class="space-y-5">
+                            <input type="hidden" name="id">
+                            <select name="pacienteId" id="select-paciente" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required></select>
+                            <select name="medicoId" id="select-medico" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required></select>
+                            <select name="patologiaId" id="select-patologia" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required></select>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between px-1">
+                                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medicamentos</h4>
+                                    <button type="button" onclick="addMedicineRow()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full font-bold">+ Adicionar</button>
+                                </div>
+                                <div id="medicines-container" class="space-y-4"></div>
+                            </div>
+                            <textarea name="notas" placeholder="Observações do tratamento..." class="w-full p-4 bg-slate-50 rounded-2xl outline-none" rows="2"></textarea>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Registar</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="tab-config" class="tab-content hidden max-w-lg mx-auto">
+                    <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                        <h2 class="font-bold text-lg mb-6 flex items-center gap-2 text-indigo-900"><i data-lucide="database" class="text-indigo-600"></i> Sincronização</h2>
+                        <div class="space-y-4">
+                            <input id="config-script-url" type="text" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm" placeholder="URL do Script">
+                            <div class="flex gap-2">
+                                <button onclick="saveConfig()" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar URL</button>
+                                <button onclick="fetchFromGoogle()" class="p-4 bg-slate-100 rounded-2xl hover:bg-slate-200 transition-all"><i data-lucide="refresh-cw" class="w-5 h-5 text-slate-600"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div id="treatment-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-end justify-center transition-all duration-300">
+        <div class="bg-white w-full max-w-2xl h-[88vh] rounded-t-[40px] shadow-2xl flex flex-col translate-y-full transition-transform duration-300" id="modal-content">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto my-4"></div>
+            <div class="px-8 py-4 border-b border-slate-50 flex justify-between items-center">
+                <h2 class="font-extrabold text-xl text-indigo-900" id="modal-title">Detalhes</h2>
+                <div class="flex gap-2">
+                    <button id="modal-edit-btn" class="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 active:scale-90 transition-all"><i data-lucide="edit-3" class="w-5 h-5"></i></button>
+                    <button onclick="closeTreatmentModal()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 active:scale-90 transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-8 space-y-6" id="modal-body"></div>
         </div>
-      </aside>
-
-      {/* Conteúdo Principal */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl font-bold capitalize">{activeTab}</h1>
-            <p className="text-slate-500 text-sm">Gerencie o fluxo de tratamentos médicos com facilidade.</p>
-          </div>
-          {loading && (
-            <div className="flex items-center gap-2 text-blue-600 text-sm font-medium">
-              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              Sincronizando...
-            </div>
-          )}
-        </header>
-
-        {activeTab === 'dashboard' && renderDashboard()}
-        {activeTab === 'pacientes' && renderPacientes()}
-        {activeTab === 'medicos' && renderMedicos()}
-        {activeTab === 'patologias' && renderPatologias()}
-        {activeTab === 'tratamentos' && renderTratamentos()}
-        {activeTab === 'config' && renderConfig()}
-      </main>
     </div>
-  );
-}
 
-// Subcomponentes
-function NavItem({ active, icon, label, onClick }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-        active 
-          ? 'bg-blue-50 text-blue-700 shadow-sm' 
-          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-      }`}
-    >
-      {React.cloneElement(icon, { size: 20 })}
-      <span className="text-sm font-medium hidden md:block">{label}</span>
-    </button>
-  );
-}
+    <div id="toast-container" class="fixed top-8 left-8 right-8 z-[200] pointer-events-none"></div>
 
-function StatCard({ icon, label, value }) {
-  return (
-    <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-      <div className="p-3 bg-slate-50 rounded-lg">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</p>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
-      </div>
-    </div>
-  );
-}
+    <script>
+        let state = {
+            pacientes: JSON.parse(localStorage.getItem('med_pacientes') || '[]'),
+            medicos: JSON.parse(localStorage.getItem('med_medicos') || '[]'),
+            patologias: JSON.parse(localStorage.getItem('med_patologias') || '[]'),
+            tratamentos: JSON.parse(localStorage.getItem('med_tratamentos') || '[]'),
+            config: JSON.parse(localStorage.getItem('med_config') || '{"scriptUrl": ""}')
+        };
 
-function EmptyState({ text }) {
-  return (
-    <div className="py-12 text-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-      <p className="text-slate-400 text-sm">{text}</p>
-    </div>
-  );
-}
+        let activePatientId = null;
+
+        window.onload = () => {
+            const urlInput = document.getElementById('config-script-url');
+            if (urlInput) urlInput.value = state.config.scriptUrl || '';
+            if (state.pacientes.length > 0) activePatientId = state.pacientes[0].id;
+            renderAll();
+            if (state.config.scriptUrl) fetchFromGoogle();
+            setTimeout(() => lucide.createIcons(), 500);
+        };
+
+        function refreshIcons() { if (window.lucide) window.lucide.createIcons(); }
+
+        function saveState(shouldSync = false, action = 'update', type = null, data = null) {
+            localStorage.setItem('med_pacientes', JSON.stringify(state.pacientes));
+            localStorage.setItem('med_medicos', JSON.stringify(state.medicos));
+            localStorage.setItem('med_patologias', JSON.stringify(state.patologias));
+            localStorage.setItem('med_tratamentos', JSON.stringify(state.tratamentos));
+            localStorage.setItem('med_config', JSON.stringify(state.config));
+            renderAll();
+            if (shouldSync && state.config.scriptUrl) syncWithGoogle(action, type, data);
+        }
+
+        function toggleActionMenu() { document.getElementById('action-menu').classList.toggle('hidden'); }
+        
+        function openAction(tab) {
+            document.getElementById('action-menu').classList.add('hidden');
+            cancelEdit(tab);
+            switchTab(tab);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item-mobile').forEach(el => el.classList.remove('active-nav-mobile'));
+            const mobBtn = document.getElementById('m-nav-' + (['dashboard','farmacia','paciente','config'].includes(tabId) ? tabId : 'dashboard'));
+            if (mobBtn) mobBtn.classList.add('active-nav-mobile');
+
+            if(tabId === 'farmacia') renderPharmacy();
+            renderAll();
+        }
+
+        function setActivePatient(id) {
+            activePatientId = id;
+            renderAll();
+        }
+
+        function renderAll() {
+            renderPatientChips();
+            renderPatientTreatments();
+            renderManagementLists();
+            updateSelectOptions();
+            refreshIcons();
+        }
+
+        function renderPatientChips() {
+            const container = document.getElementById('patient-chips-container');
+            if (!container) return;
+            if (state.pacientes.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 italic py-2 px-2 underline" onclick="switchTab(\'paciente\')">Adicionar primeiro membro</p>';
+                return;
+            }
+            container.innerHTML = state.pacientes.map(p => `
+                <button onclick="setActivePatient('${p.id}')" 
+                    class="flex-shrink-0 px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-sm ${String(activePatientId) === String(p.id) ? 'chip-active' : 'bg-white text-slate-500 border border-slate-100'}">
+                    ${p.nome}
+                </button>
+            `).join('');
+        }
+
+        function renderPatientTreatments() {
+            const view = document.getElementById('patient-treatments-view');
+            if (!view || !activePatientId) return;
+            const trats = state.tratamentos.filter(t => String(t.pacienteId) === String(activePatientId));
+            if (trats.length === 0) {
+                view.innerHTML = `<div class="text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200 text-slate-400 text-sm italic px-6">Sem histórico para esta pessoa.</div>`;
+                return;
+            }
+            view.innerHTML = '<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Histórico</h3>' + 
+                trats.reverse().map(t => {
+                    const pat = state.patologias.find(p => String(p.id) === String(t.patologiaId));
+                    return `
+                        <div onclick="showDetail('${t.id}')" class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4 active:scale-95 transition-all">
+                            <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                                <i data-lucide="clipboard-list" class="w-6 h-6"></i>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <h4 class="font-extrabold text-slate-800">${pat ? pat.nome : 'Tratamento'}</h4>
+                                <p class="text-xs text-slate-400 font-semibold">${new Date(t.dataInicio).toLocaleDateString('pt-BR')} • ${t.medicamentos?.length || 0} itens</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="text-slate-300 w-5 h-5"></i>
+                        </div>
+                    `;
+                }).join('');
+            refreshIcons();
+        }
+
+        function renderPharmacy() {
+            const list = document.getElementById('pharmacy-list');
+            const search = document.getElementById('search-pharmacy').value.toLowerCase();
+            
+            // Extrair todos os remédios únicos dos tratamentos
+            const allMeds = state.tratamentos.flatMap(t => (t.medicamentos || []).map(m => ({...m, data: t.dataInicio, patId: t.patologiaId})));
+            
+            // Agrupar por nome para evitar duplicados idênticos na visão geral
+            const uniqueMeds = [];
+            const seen = new Set();
+            allMeds.forEach(m => {
+                const key = `${m.nome}-${m.ativo}`.toLowerCase();
+                if (!seen.has(key)) {
+                    uniqueMeds.push(m);
+                    seen.add(key);
+                }
+            });
+
+            const filtered = uniqueMeds.filter(m => 
+                m.nome.toLowerCase().includes(search) || 
+                (m.ativo && m.ativo.toLowerCase().includes(search))
+            );
+
+            list.innerHTML = filtered.map(m => `
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-black text-indigo-950 text-base">${m.nome}</h4>
+                        <span class="text-[10px] bg-slate-50 px-2 py-1 rounded-lg font-bold text-slate-400 uppercase tracking-tighter">${m.classe || 'N/A'}</span>
+                    </div>
+                    <p class="text-[11px] text-indigo-500 font-bold uppercase mb-2">${m.ativo || 'Princípio Ativo n/a'}</p>
+                    <div class="text-[10px] text-slate-500 space-y-1 py-2 border-t border-slate-50">
+                        <div><strong>Composição:</strong> ${m.composicao || '-'}</div>
+                        <div><strong>Indicação:</strong> ${m.indicacao || '-'}</div>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-center py-10 text-slate-400">Nenhum remédio encontrado.</p>';
+            refreshIcons();
+        }
+
+        function showDetail(id) {
+            const t = state.tratamentos.find(i => String(i.id) === String(id));
+            if (!t) return;
+            const pac = state.pacientes.find(p => String(p.id) === String(t.pacienteId));
+            const med = state.medicos.find(m => String(m.id) === String(t.medicoId));
+            const pat = state.patologias.find(p => String(p.id) === String(t.patologiaId));
+
+            document.getElementById('modal-title').innerText = pat ? pat.nome : 'Detalhes';
+            document.getElementById('modal-edit-btn').onclick = () => { closeTreatmentModal(); editItem('tratamento', t.id); };
+
+            const medsHtml = (t.medicamentos || []).map(m => `
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <span class="font-black text-indigo-950 text-base">${m.nome}</span>
+                        <span class="text-[9px] bg-white px-2 py-1 rounded-full border border-slate-100 font-black uppercase">Val: ${m.vencimento || 'N/A'}</span>
+                    </div>
+                    <p class="text-[11px] text-indigo-500 font-extrabold uppercase">${m.ativo || ''}</p>
+                    <div class="text-[11px] text-slate-500 space-y-1.5 py-3 border-t border-slate-200 mt-2">
+                        ${m.classe ? `<div><span class="font-bold text-slate-700">Classe:</span> ${m.classe}</div>` : ''}
+                        ${m.composicao ? `<div><span class="font-bold text-slate-700">Comp.:</span> ${m.composicao}</div>` : ''}
+                        ${m.indicacao ? `<div><span class="font-bold text-slate-700">Indicação:</span> ${m.indicacao}</div>` : ''}
+                        <div class="text-indigo-600 font-black">Dosagem: ${m.dosagem || 'n/a'}</div>
+                        ${m.observacao ? `<div class="bg-indigo-50 p-3 rounded-2xl text-indigo-800 mt-2 italic border border-indigo-100 font-medium">Obs: ${m.observacao}</div>` : ''}
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                        <div class="text-[10px] text-slate-600 flex items-center gap-1 font-black uppercase tracking-tighter"><i data-lucide="clock" class="w-3 h-3 text-indigo-300"></i> ${m.posologia || '-'}</div>
+                        <div class="text-[10px] text-slate-600 flex items-center gap-1 font-black uppercase tracking-tighter"><i data-lucide="calendar" class="w-3 h-3 text-indigo-300"></i> ${m.duracao || '-'}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="bg-indigo-50 p-5 rounded-3xl flex items-center gap-4">
+                    <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-black text-lg">${pac ? pac.nome.charAt(0) : '?'}</div>
+                    <div class="text-left">
+                        <p class="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Paciente</p>
+                        <p class="font-extrabold text-slate-800">${pac ? pac.nome : 'N/A'}</p>
+                    </div>
+                </div>
+                <div class="space-y-4">${medsHtml}</div>
+                <div class="bg-slate-900 p-6 rounded-[32px] text-white text-left shadow-xl">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1 text-left">Médico Assistente</p>
+                    <p class="font-bold text-lg text-left">${med ? med.nome : 'N/A'}</p>
+                </div>
+                ${t.notas ? `<div class="bg-white border p-6 rounded-3xl italic text-sm text-slate-600 text-left shadow-sm">"${t.notas}"</div>` : ''}
+                <div class="pt-4 flex gap-2">
+                    <button onclick="deleteItem('tratamentos', '${t.id}'); closeTreatmentModal();" class="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-black">Apagar</button>
+                    <button onclick="closeTreatmentModal()" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black">Fechar</button>
+                </div>
+            `;
+            const modal = document.getElementById('treatment-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { document.getElementById('modal-content').style.transform = "translateY(0)"; }, 10);
+            refreshIcons();
+        }
+
+        function closeTreatmentModal() {
+            document.getElementById('modal-content').style.transform = "translateY(100%)";
+            setTimeout(() => { document.getElementById('treatment-modal').classList.add('hidden'); }, 300);
+        }
+
+        function renderManagementLists() {
+            ['paciente', 'medico', 'patologia'].forEach(type => {
+                const list = document.getElementById(`list-${type}s`);
+                if (!list) return;
+                list.innerHTML = state[`${type}s`].map(item => `
+                    <div class="bg-white p-5 rounded-2xl border border-slate-50 flex justify-between items-center shadow-sm">
+                        <span class="text-sm font-bold text-slate-800">${item.nome}</span>
+                        <div class="flex gap-2">
+                            <button onclick="editItem('${type}', '${item.id}')" class="text-indigo-600 p-3 bg-indigo-50 rounded-xl"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            <button onclick="deleteItem('${type}s', '${item.id}')" class="text-red-400 p-3 bg-red-50 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function addMedicineRow() { addMedicineRowWithData({}); }
+        function addMedicineRowWithData(data) {
+            const container = document.getElementById('medicines-container');
+            const id = 'med-' + Math.random().toString(36).substring(7);
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'medicine-row p-5 bg-slate-50 rounded-[28px] relative border border-slate-100 shadow-inner';
+            div.innerHTML = `
+                <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                <div class="space-y-3 text-left">
+                    <input name="remedio[]" value="${data.nome || ''}" placeholder="Remédio" class="w-full p-3 bg-white rounded-xl text-sm font-bold border-none shadow-sm" required>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input name="ativo[]" value="${data.ativo || ''}" placeholder="Princípio Ativo" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                        <input name="classe[]" value="${data.classe || ''}" placeholder="Classe" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input name="composicao[]" value="${data.composicao || ''}" placeholder="Composição" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                        <input name="indicacao[]" value="${data.indicacao || ''}" placeholder="Indicação" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="flex flex-col"><label class="text-[8px] font-bold text-slate-400 ml-1 mb-0.5 uppercase tracking-widest">Validade</label><input name="vencimento[]" value="${data.vencimento || ''}" type="date" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm"></div>
+                        <div class="flex flex-col"><label class="text-[8px] font-bold text-slate-400 ml-1 mb-0.5 uppercase tracking-widest">Dosagem</label><input name="dosagem[]" value="${data.dosagem || ''}" placeholder="40mg" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input name="posologia[]" value="${data.posologia || ''}" placeholder="8/8h" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                        <input name="duracao[]" value="${data.duracao || ''}" placeholder="7 dias" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                    </div>
+                    <textarea name="observacao_med[]" placeholder="Obs..." class="w-full p-3 bg-white rounded-xl text-[11px] border-none shadow-sm" rows="2">${data.observacao || ''}</textarea>
+                </div>
+            `;
+            container.appendChild(div);
+            refreshIcons();
+        }
+
+        function handleForm(e, type) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            const listName = type + 's';
+            const id = data.id;
+
+            if (type === 'tratamento') {
+                const meds = [];
+                const names = formData.getAll('remedio[]');
+                const actives = formData.getAll('ativo[]');
+                const classes = formData.getAll('classe[]');
+                const composicoes = formData.getAll('composicao[]');
+                const indications = formData.getAll('indicacao[]');
+                const valids = formData.getAll('vencimento[]');
+                const doses = formData.getAll('dosagem[]');
+                const posos = formData.getAll('posologia[]');
+                const duras = formData.getAll('duracao[]');
+                const obs = formData.getAll('observacao_med[]');
+                for (let i = 0; i < names.length; i++) {
+                    meds.push({ nome: names[i], ativo: actives[i], classe: classes[i], composicao: composicoes[i], indicacao: indications[i], vencimento: valids[i], dosagem: doses[i], posologia: posos[i], duracao: duras[i], observacao: obs[i] });
+                }
+                data.medicamentos = meds;
+                ['remedio[]', 'ativo[]', 'classe[]', 'composicao[]', 'indicacao[]', 'vencimento[]', 'dosagem[]', 'posologia[]', 'duracao[]', 'observacao_med[]'].forEach(k => delete data[k]);
+            }
+
+            if (id && id !== "") {
+                const idx = state[listName].findIndex(i => String(i.id) === String(id));
+                if (idx !== -1) {
+                    state[listName][idx] = { ...state[listName][idx], ...data };
+                    saveState(true, 'update', listName, state[listName][idx]);
+                }
+            } else {
+                data.id = Date.now().toString();
+                data.dataInicio = data.dataInicio || new Date().toISOString();
+                state[listName].push(data);
+                saveState(true, 'add', listName, data);
+                if(type === 'paciente') activePatientId = data.id;
+            }
+            e.target.reset();
+            switchTab('dashboard');
+            showToast("✓ Guardado!");
+        }
+
+        function deleteItem(list, id) {
+            if (!confirm("Confirmar exclusão?")) return;
+            const item = state[list].find(i => String(i.id) === String(id));
+            state[list] = state[list].filter(i => String(i.id) !== String(id));
+            saveState(true, 'delete', list, item);
+        }
+
+        function editItem(type, id) {
+            const list = type + 's';
+            const item = state[list].find(i => String(i.id) === String(id));
+            if(!item) return;
+            switchTab(type);
+            const form = document.getElementById('form-' + type);
+            Array.from(form.elements).forEach(el => {
+                if (el.name && item[el.name]) el.value = item[el.name];
+                if (el.name === 'id') el.value = item.id;
+            });
+            if (type === 'tratamento') {
+                const container = document.getElementById('medicines-container');
+                container.innerHTML = '';
+                (item.medicamentos || []).forEach(m => addMedicineRowWithData(m));
+            }
+            refreshIcons();
+        }
+
+        function cancelEdit(type) {
+            const form = document.getElementById('form-' + type);
+            if(form) { form.reset(); if(form.elements['id']) form.elements['id'].value = ''; if (type === 'tratamento') { document.getElementById('medicines-container').innerHTML = ''; addMedicineRow(); } }
+            refreshIcons();
+        }
+
+        function updateSelectOptions() {
+            const selects = { paciente: 'pacientes', medico: 'medicos', patologia: 'patologias' };
+            for (let [id, list] of Object.entries(selects)) {
+                const el = document.getElementById('select-' + id);
+                if (el) el.innerHTML = `<option value="">Selecionar ${id}</option>` + state[list].map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+            }
+        }
+
+        function saveConfig() {
+            state.config.scriptUrl = document.getElementById('config-script-url').value;
+            saveState();
+            showToast("✓ URL Guardada");
+        }
+
+        async function syncWithGoogle(action, type, data) {
+            if (!state.config.scriptUrl) return;
+            document.getElementById('sync-indicator').classList.remove('hidden');
+            try {
+                await fetch(state.config.scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action, type, data }) });
+                showToast("✓ Nuvem Sincronizada");
+            } catch (e) { showToast("! Erro de sincronia", "error"); }
+            finally { document.getElementById('sync-indicator').classList.add('hidden'); }
+        }
+
+        async function fetchFromGoogle() {
+            if (!state.config.scriptUrl) return;
+            document.getElementById('sync-indicator').classList.remove('hidden');
+            try {
+                const res = await fetch(state.config.scriptUrl + "?action=getAll");
+                const cloud = await res.json();
+                if (cloud && typeof cloud === 'object') { state = { ...state, ...cloud }; saveState(); showToast("✓ Dados Importados"); }
+            } catch (e) { showToast("! Erro importar dados", "error"); }
+            finally { document.getElementById('sync-indicator').classList.add('hidden'); }
+        }
+
+        function showToast(msg, type = "success") {
+            const container = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `p-4 mb-2 rounded-2xl shadow-xl text-white text-xs font-bold text-center transition-all ${type === 'success' ? 'bg-indigo-600/90' : 'bg-red-500/90'}`;
+            t.innerText = msg;
+            container.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = 'medfamilia_backup.json'; a.click();
+        }
+    </script>
+</body>
+</html>
