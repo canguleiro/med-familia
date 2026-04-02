@@ -11,6 +11,7 @@
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: contain;
         }
         .active-nav-mobile { color: #4f46e5; border-top: 2px solid #4f46e5; }
         .hidden { display: none !important; }
@@ -31,7 +32,7 @@
 
     <div class="min-h-screen flex flex-col md:flex-row">
         
-        <!-- BARRA LATERAL DESKTOP -->
+        <!-- SIDEBAR DESKTOP -->
         <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col sticky top-0 h-screen p-6">
             <div class="flex items-center gap-3 mb-10">
                 <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -40,7 +41,7 @@
                 <span class="font-bold text-xl text-indigo-900 tracking-tight">MedFamília</span>
             </div>
             <nav class="space-y-2">
-                <button onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all font-medium">
+                <button onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-medium">
                     <i data-lucide="home" class="w-5 h-5"></i> Início
                 </button>
                 <button onclick="switchTab('config')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-medium">
@@ -56,17 +57,15 @@
                 <span class="text-[10px] font-bold">Início</span>
             </button>
             
-            <!-- Botão Central Dropdown -->
             <div class="relative">
-                <button onclick="toggleActionMenu()" class="bg-indigo-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 -mt-8 active:scale-90 transition-transform">
+                <button onclick="toggleActionMenu()" class="bg-indigo-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg -mt-8 active:scale-90 transition-transform">
                     <i data-lucide="plus" class="w-7 h-7"></i>
                 </button>
-                <!-- Menu Dropdown -->
                 <div id="action-menu" class="hidden absolute bottom-20 left-1/2 -translate-x-1/2 w-56 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col z-[60]">
-                    <button onclick="openAction('tratamento')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100 border-b border-slate-50"><i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> Novo Tratamento</button>
-                    <button onclick="openAction('paciente')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100 border-b border-slate-50"><i data-lucide="user-plus" class="w-4 h-4 text-blue-500"></i> Membro da Família</button>
-                    <button onclick="openAction('medico')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100 border-b border-slate-50"><i data-lucide="stethoscope" class="w-4 h-4 text-green-500"></i> Médico</button>
-                    <button onclick="openAction('patologia')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100"><i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Patologia / Doença</button>
+                    <button onclick="openAction('tratamento')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 border-b border-slate-50"><i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> Novo Tratamento</button>
+                    <button onclick="openAction('paciente')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 border-b border-slate-50"><i data-lucide="user-plus" class="w-4 h-4 text-blue-500"></i> Membro da Família</button>
+                    <button onclick="openAction('medico')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 border-b border-slate-50"><i data-lucide="stethoscope" class="w-4 h-4 text-green-500"></i> Médico</button>
+                    <button onclick="openAction('patologia')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50"><i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Patologia</button>
                 </div>
             </div>
 
@@ -76,10 +75,9 @@
             </button>
         </nav>
 
-        <!-- ÁREA DE CONTEÚDO -->
+        <!-- CONTEÚDO -->
         <main class="flex-1 bg-slate-50 pb-24 md:pb-0 overflow-y-auto h-screen">
             
-            <!-- HEADER MOBILE -->
             <div class="md:hidden bg-white px-6 py-5 flex flex-col gap-1 sticky top-0 z-40 border-b border-slate-50">
                 <div class="flex justify-between items-center">
                     <h1 class="text-xl font-extrabold text-indigo-950">MedFamília</h1>
@@ -87,37 +85,32 @@
                         <div class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 </div>
-                <p id="sub-header-text" class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Saúde em Família</p>
+                <p id="sub-header-text" class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Histórico de Saúde</p>
             </div>
 
             <div class="p-6">
-                <!-- TELA INICIAL: Seleção e Lista -->
+                <!-- TELA INICIAL -->
                 <div id="tab-dashboard" class="tab-content space-y-6">
-                    <!-- Chips de Pacientes -->
                     <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2" id="patient-chips-container"></div>
-
-                    <!-- Lista de Tratamentos -->
-                    <div class="space-y-4" id="patient-treatments-view">
-                        <!-- Conteúdo gerado via JS -->
-                    </div>
+                    <div class="space-y-4" id="patient-treatments-view"></div>
                 </div>
 
-                <!-- FORMULÁRIO: MEMBRO -->
+                <!-- FORM: PACIENTE -->
                 <div id="tab-paciente" class="tab-content hidden max-w-lg mx-auto space-y-6">
-                    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100">
-                        <h2 class="font-bold text-lg mb-6 flex items-center gap-2"><i data-lucide="users" class="text-indigo-500"></i> Membro da Família</h2>
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100">
+                        <h2 class="font-bold text-lg mb-6">Membro da Família</h2>
                         <form id="form-paciente" class="space-y-4">
                             <input type="hidden" name="id">
-                            <input name="nome" placeholder="Nome" class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-indigo-200" required>
+                            <input name="nome" placeholder="Nome" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
                             <input name="nascimento" type="date" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
-                            <textarea name="historico" placeholder="Notas de saúde..." class="w-full p-4 bg-slate-50 rounded-2xl outline-none" rows="3"></textarea>
-                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Guardar Membro</button>
+                            <textarea name="historico" placeholder="Notas importantes..." class="w-full p-4 bg-slate-50 rounded-2xl outline-none" rows="3"></textarea>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar</button>
                         </form>
                     </div>
                     <div id="list-pacientes" class="space-y-2"></div>
                 </div>
 
-                <!-- FORMULÁRIO: MÉDICO -->
+                <!-- FORM: MÉDICO -->
                 <div id="tab-medico" class="tab-content hidden max-w-lg mx-auto space-y-6">
                     <div class="bg-white p-6 rounded-[32px] border border-slate-100">
                         <h2 class="font-bold text-lg mb-6">Novo Médico</h2>
@@ -132,14 +125,14 @@
                     <div id="list-medicos" class="space-y-2"></div>
                 </div>
 
-                <!-- FORMULÁRIO: PATOLOGIA -->
+                <!-- FORM: PATOLOGIA -->
                 <div id="tab-patologia" class="tab-content hidden max-w-lg mx-auto space-y-6">
                     <div class="bg-white p-6 rounded-[32px] border border-slate-100">
                         <h2 class="font-bold text-lg mb-6">Nova Patologia</h2>
                         <form id="form-patologia" class="space-y-4">
                             <input type="hidden" name="id">
-                            <input name="nome" placeholder="Nome da Patologia" class="w-full p-4 bg-slate-50 rounded-2xl" required>
-                            <textarea name="sintomas" placeholder="Sintomas comuns..." class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea>
+                            <input name="nome" placeholder="Nome da Doença" class="w-full p-4 bg-slate-50 rounded-2xl" required>
+                            <textarea name="sintomas" placeholder="Sintomas..." class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea>
                             <textarea name="diagnostico" placeholder="Notas de diagnóstico..." class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea>
                             <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar</button>
                         </form>
@@ -147,41 +140,41 @@
                     <div id="list-patologias" class="space-y-2"></div>
                 </div>
 
-                <!-- FORMULÁRIO: TRATAMENTO -->
+                <!-- FORM: TRATAMENTO -->
                 <div id="tab-tratamento" class="tab-content hidden max-w-lg mx-auto">
                     <div class="bg-white p-6 rounded-[32px] border border-slate-100">
-                        <h3 class="font-bold text-lg mb-6">Novo Tratamento</h3>
+                        <h3 class="font-bold text-lg mb-6 text-indigo-900">Novo Tratamento</h3>
                         <form id="form-tratamento" class="space-y-5">
                             <input type="hidden" name="id">
-                            <select name="pacienteId" id="select-paciente" class="w-full p-4 bg-slate-50 rounded-2xl" required></select>
-                            <select name="medicoId" id="select-medico" class="w-full p-4 bg-slate-50 rounded-2xl" required></select>
-                            <select name="patologiaId" id="select-patologia" class="w-full p-4 bg-slate-50 rounded-2xl" required></select>
+                            <select name="pacienteId" id="select-paciente" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required></select>
+                            <select name="medicoId" id="select-medico" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required></select>
+                            <select name="patologiaId" id="select-patologia" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required></select>
 
                             <div class="space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Medicamentos</h4>
-                                    <button type="button" onclick="addMedicineRow()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full font-bold">+ Adicionar</button>
+                                <div class="flex items-center justify-between px-1">
+                                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medicamentos</h4>
+                                    <button type="button" onclick="addMedicineRow()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 font-bold rounded-full">+ Adicionar</button>
                                 </div>
                                 <div id="medicines-container" class="space-y-4"></div>
                             </div>
 
-                            <textarea name="notas" placeholder="Observações do tratamento..." class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea>
-                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg shadow-indigo-100">Registar Agora</button>
+                            <textarea name="notas" placeholder="Observações..." class="w-full p-4 bg-slate-50 rounded-2xl outline-none" rows="2"></textarea>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg shadow-indigo-100">Registar Tratamento</button>
                         </form>
                     </div>
                 </div>
 
-                <!-- CONFIGURAÇÃO -->
+                <!-- CONFIG -->
                 <div id="tab-config" class="tab-content hidden max-w-lg mx-auto">
                     <div class="bg-white p-8 rounded-[32px] border border-slate-100">
-                        <h2 class="font-bold text-lg mb-6">Configuração Nuvem</h2>
+                        <h2 class="font-bold text-lg mb-6">Ajustes</h2>
                         <div class="space-y-4">
-                            <input id="config-script-url" type="text" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" placeholder="Link do Apps Script">
+                            <input id="config-script-url" type="text" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" placeholder="URL do Google Script">
                             <div class="flex gap-2">
                                 <button onclick="saveConfig()" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar URL</button>
-                                <button onclick="fetchFromGoogle()" class="p-4 bg-slate-100 rounded-2xl"><i data-lucide="refresh-cw"></i></button>
+                                <button onclick="fetchFromGoogle()" class="p-4 bg-slate-100 rounded-2xl"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
                             </div>
-                            <button onclick="exportData()" class="w-full text-sm text-slate-400 py-4 font-medium flex items-center justify-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Exportar Backup JSON</button>
+                            <button onclick="exportData()" class="w-full text-sm text-slate-400 py-4 font-medium flex items-center justify-center gap-2 border-t"><i data-lucide="download" class="w-4 h-4"></i> Exportar Backup</button>
                         </div>
                     </div>
                 </div>
@@ -190,7 +183,7 @@
     </div>
 
     <!-- MODAL DE DETALHES -->
-    <div id="treatment-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-end justify-center transition-opacity duration-300">
+    <div id="treatment-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-end justify-center">
         <div class="bg-white w-full max-w-2xl h-[85vh] rounded-t-[40px] shadow-2xl flex flex-col translate-y-full transition-transform duration-300" id="modal-content">
             <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto my-4"></div>
             <div class="px-8 py-4 border-b border-slate-50 flex justify-between items-center">
@@ -201,10 +194,9 @@
         </div>
     </div>
 
-    <div id="toast-container" class="fixed top-6 left-6 right-6 z-[200] pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-4 left-4 right-4 z-[200] pointer-events-none"></div>
 
     <script>
-        // --- Estado Global ---
         let state = {
             pacientes: JSON.parse(localStorage.getItem('med_pacientes') || '[]'),
             medicos: JSON.parse(localStorage.getItem('med_medicos') || '[]'),
@@ -215,37 +207,70 @@
 
         let activePatientId = null;
 
-        // --- Inicialização ---
         window.onload = () => {
             const urlInput = document.getElementById('config-script-url');
-            if (urlInput) urlInput.value = state.config.scriptUrl;
-            
-            // Inicia com o primeiro paciente se houver
+            if (urlInput) urlInput.value = state.config.scriptUrl || '';
             if (state.pacientes.length > 0) activePatientId = state.pacientes[0].id;
-            
             renderAll();
             if (state.config.scriptUrl) fetchFromGoogle();
             setTimeout(() => lucide.createIcons(), 500);
         };
 
-        // --- Funções de Renderização ---
+        function refreshIcons() { if (window.lucide) window.lucide.createIcons(); }
+
+        function saveState(shouldSync = false, action = 'update', type = null, data = null) {
+            localStorage.setItem('med_pacientes', JSON.stringify(state.pacientes));
+            localStorage.setItem('med_medicos', JSON.stringify(state.medicos));
+            localStorage.setItem('med_patologias', JSON.stringify(state.patologias));
+            localStorage.setItem('med_tratamentos', JSON.stringify(state.tratamentos));
+            localStorage.setItem('med_config', JSON.stringify(state.config));
+            renderAll();
+            if (shouldSync && state.config.scriptUrl) syncWithGoogle(action, type, data);
+        }
+
+        function toggleActionMenu() { document.getElementById('action-menu').classList.toggle('hidden'); }
+        
+        function openAction(tab) {
+            document.getElementById('action-menu').classList.add('hidden');
+            if (tab === 'tratamento') {
+                document.getElementById('medicines-container').innerHTML = '';
+                addMedicineRow();
+            }
+            switchTab(tab);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item-mobile').forEach(el => el.classList.remove('active-nav-mobile'));
+            if (tabId === 'dashboard') document.getElementById('m-nav-dashboard').classList.add('active-nav-mobile');
+            if (tabId === 'config') document.getElementById('m-nav-config').classList.add('active-nav-mobile');
+            
+            renderAll();
+        }
+
+        function setActivePatient(id) {
+            activePatientId = id;
+            renderAll();
+        }
+
         function renderAll() {
             renderPatientChips();
             renderPatientTreatments();
             renderManagementLists();
             updateSelectOptions();
-            lucide.createIcons();
+            refreshIcons();
         }
 
         function renderPatientChips() {
             const container = document.getElementById('patient-chips-container');
             if (!container) return;
-
             if (state.pacientes.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 italic px-2">Adicione membros da família no menu +</p>';
+                container.innerHTML = '<p class="text-xs text-slate-400 italic py-2 px-2">Crie um membro no botão +</p>';
                 return;
             }
-
             container.innerHTML = state.pacientes.map(p => `
                 <button onclick="setActivePatient('${p.id}')" 
                     class="flex-shrink-0 px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-sm ${activePatientId === p.id ? 'chip-active' : 'bg-white text-slate-500 border border-slate-100'}">
@@ -254,33 +279,22 @@
             `).join('');
         }
 
-        function setActivePatient(id) {
-            activePatientId = id;
-            renderAll();
-        }
-
         function renderPatientTreatments() {
             const view = document.getElementById('patient-treatments-view');
             if (!view) return;
-
             if (!activePatientId) {
-                view.innerHTML = '<div class="text-center py-20 text-slate-300">Selecione um membro</div>';
+                view.innerHTML = '<div class="text-center py-20 text-slate-300">Nenhum membro selecionado</div>';
                 return;
             }
-
-            const trats = state.tratamentos.filter(t => t.pacienteId === activePatientId);
-
+            const trats = state.tratamentos.filter(t => String(t.pacienteId) === String(activePatientId));
             if (trats.length === 0) {
-                view.innerHTML = `
-                    <div class="text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200">
-                        <p class="text-slate-400 text-sm">Sem tratamentos registados para este membro.</p>
-                    </div>`;
+                view.innerHTML = `<div class="text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200 text-slate-400 text-sm italic px-6">Sem tratamentos para esta pessoa.</div>`;
                 return;
             }
-
-            view.innerHTML = '<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Histórico Recente</h3>' + 
+            view.innerHTML = '<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Histórico</h3>' + 
                 trats.reverse().map(t => {
                     const pat = state.patologias.find(p => p.id === t.patologiaId);
+                    const dateStr = new Date(t.dataInicio).toLocaleDateString('pt-BR');
                     return `
                         <div onclick="showDetail('${t.id}')" class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4 active:scale-95 transition-all">
                             <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
@@ -288,13 +302,76 @@
                             </div>
                             <div class="flex-1">
                                 <h4 class="font-bold text-slate-800">${pat ? pat.nome : 'Tratamento'}</h4>
-                                <p class="text-xs text-slate-400">${new Date(t.dataInicio).toLocaleDateString('pt-BR')} • ${t.medicamentos?.length || 0} medicamentos</p>
+                                <p class="text-xs text-slate-400 font-medium">${dateStr} • ${t.medicamentos?.length || 0} itens</p>
                             </div>
                             <i data-lucide="chevron-right" class="text-slate-300 w-5 h-5"></i>
                         </div>
                     `;
                 }).join('');
-            lucide.createIcons();
+            refreshIcons();
+        }
+
+        function showDetail(id) {
+            const t = state.tratamentos.find(i => i.id === id);
+            if (!t) return;
+            const pac = state.pacientes.find(p => p.id === t.pacienteId);
+            const med = state.medicos.find(m => m.id === t.medicoId);
+            const pat = state.patologias.find(p => p.id === t.patologiaId);
+
+            document.getElementById('modal-title').innerText = pat ? pat.nome : 'Detalhes';
+            const medsHtml = (t.medicamentos || []).map(m => `
+                <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <span class="font-extrabold text-indigo-950">${m.nome}</span>
+                        <span class="text-[9px] bg-white px-2 py-1 rounded-full border border-slate-100 font-bold">Val: ${m.vencimento}</span>
+                    </div>
+                    <p class="text-[11px] text-indigo-500 font-bold uppercase">${m.ativo || ''}</p>
+                    <div class="text-[10px] text-slate-500 space-y-1 py-2 border-t border-slate-200 mt-2">
+                        ${m.classe ? `<div><strong>Classe:</strong> ${m.classe}</div>` : ''}
+                        ${m.formula ? `<div><strong>Fórmula:</strong> ${m.formula}</div>` : ''}
+                        ${m.indicacao ? `<div><strong>Indicação:</strong> ${m.indicacao}</div>` : ''}
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                        <div class="text-[10px] text-slate-500 flex items-center gap-1 font-bold uppercase tracking-tighter"><i data-lucide="clock" class="w-3 h-3"></i> ${m.posologia || '-'}</div>
+                        <div class="text-[10px] text-slate-500 flex items-center gap-1 font-bold uppercase tracking-tighter"><i data-lucide="calendar" class="w-3 h-3"></i> ${m.duracao || '-'}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="bg-indigo-50 p-5 rounded-3xl flex items-center gap-4">
+                    <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">${pac?.nome.charAt(0)}</div>
+                    <div>
+                        <p class="text-xs text-indigo-400 font-bold uppercase">Membro</p>
+                        <p class="font-bold text-slate-800">${pac?.nome}</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Prescrição</p>
+                    ${medsHtml}
+                </div>
+                <div class="bg-slate-900 p-6 rounded-[32px] text-white">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Médico Assistente</p>
+                    <p class="font-bold text-lg">${med ? med.nome : 'N/A'}</p>
+                    <p class="text-xs text-indigo-300 font-medium">${med ? med.especialidade : ''}</p>
+                </div>
+                ${t.notas ? `<div class="bg-white border p-5 rounded-2xl italic text-sm text-slate-500">"${t.notas}"</div>` : ''}
+                <div class="pt-4 flex gap-2">
+                    <button onclick="deleteItem('tratamentos', '${t.id}'); closeTreatmentModal();" class="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-bold">Apagar</button>
+                    <button onclick="closeTreatmentModal()" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">Fechar</button>
+                </div>
+            `;
+            const modal = document.getElementById('treatment-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => content.style.transform = "translateY(0)", 10);
+            refreshIcons();
+        }
+
+        function closeTreatmentModal() {
+            const content = document.getElementById('modal-content');
+            content.style.transform = "translateY(100%)";
+            setTimeout(() => document.getElementById('treatment-modal').classList.add('hidden'), 300);
         }
 
         function renderManagementLists() {
@@ -313,120 +390,36 @@
             });
         }
 
-        // --- Menu e Modal ---
-        function toggleActionMenu() { document.getElementById('action-menu').classList.toggle('hidden'); }
-        
-        function openAction(tab) {
-            document.getElementById('action-menu').classList.add('hidden');
-            if (tab === 'tratamento') {
-                const container = document.getElementById('medicines-container');
-                container.innerHTML = '';
-                addMedicineRow();
-            }
-            switchTab(tab);
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            const target = document.getElementById('tab-' + tabId);
-            if (target) target.classList.remove('hidden');
-
-            document.querySelectorAll('.nav-item-mobile').forEach(el => el.classList.remove('active-nav-mobile'));
-            if (tabId === 'dashboard') document.getElementById('m-nav-dashboard').classList.add('active-nav-mobile');
-            if (tabId === 'config') document.getElementById('m-nav-config').classList.add('active-nav-mobile');
-
-            const headerText = document.getElementById('sub-header-text');
-            headerText.innerText = tabId === 'dashboard' ? 'Saúde em Família' : 'Gestão de ' + tabId;
-            
-            renderAll();
-            window.scrollTo(0, 0);
-        }
-
-        function showDetail(id) {
-            const t = state.tratamentos.find(i => i.id === id);
-            if (!t) return;
-
-            const pac = state.pacientes.find(p => p.id === t.pacienteId);
-            const med = state.medicos.find(m => m.id === t.medicoId);
-            const pat = state.patologias.find(p => p.id === t.patologiaId);
-
-            document.getElementById('modal-title').innerText = pat ? pat.nome : 'Detalhes';
-            
-            const medsHtml = (t.medicamentos || []).map(m => `
-                <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-2">
-                    <div class="flex justify-between items-start">
-                        <span class="font-extrabold text-indigo-950">${m.nome}</span>
-                        <span class="text-[9px] bg-white px-2 py-1 rounded-full border border-slate-100 font-bold">Val: ${m.vencimento}</span>
-                    </div>
-                    <p class="text-[11px] text-indigo-500 font-bold uppercase tracking-tight">${m.ativo || 'Princípio Ativo não inf.'}</p>
-                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/50">
-                        <div class="text-[11px] text-slate-500 flex items-center gap-2 font-medium"><i data-lucide="clock" class="w-3 h-3 text-indigo-300"></i> ${m.posologia || '-'}</div>
-                        <div class="text-[11px] text-slate-500 flex items-center gap-2 font-medium"><i data-lucide="calendar" class="w-3 h-3 text-indigo-300"></i> ${m.duracao || '-'}</div>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('modal-body').innerHTML = `
-                <div class="flex items-center gap-3 bg-indigo-50 p-4 rounded-2xl">
-                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">${pac?.nome.charAt(0)}</div>
-                    <div>
-                        <p class="text-xs text-indigo-400 font-bold uppercase tracking-tighter">Paciente</p>
-                        <p class="font-bold text-slate-800">${pac?.nome}</p>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Prescrição Médica</p>
-                    ${medsHtml}
-                </div>
-                <div class="bg-slate-900 p-6 rounded-[32px] text-white space-y-1">
-                    <p class="text-[10px] text-slate-500 font-bold uppercase">Médico Assistente</p>
-                    <p class="font-bold text-lg">${med ? med.nome : 'N/A'}</p>
-                    <p class="text-xs text-indigo-400 font-medium">${med ? med.especialidade : ''}</p>
-                </div>
-                ${t.notes ? `<div class="bg-white border p-5 rounded-2xl italic text-sm text-slate-500">"${t.notes}"</div>` : ''}
-                <div class="pt-4 flex gap-2">
-                    <button onclick="deleteItem('tratamentos', '${t.id}'); closeTreatmentModal();" class="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-bold">Apagar</button>
-                    <button onclick="closeTreatmentModal()" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">Fechar</button>
-                </div>
-            `;
-
-            const modal = document.getElementById('treatment-modal');
-            const content = document.getElementById('modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => content.style.transform = "translateY(0)", 10);
-            lucide.createIcons();
-        }
-
-        function closeTreatmentModal() {
-            const content = document.getElementById('modal-content');
-            content.style.transform = "translateY(100%)";
-            setTimeout(() => document.getElementById('treatment-modal').classList.add('hidden'), 300);
-        }
-
-        // --- Logica de Formulários ---
         function addMedicineRow() {
             const container = document.getElementById('medicines-container');
             const id = 'med-' + Date.now();
             const div = document.createElement('div');
             div.id = id;
-            div.className = 'medicine-row p-5 bg-slate-50 rounded-3xl relative border border-slate-100';
+            div.className = 'medicine-row p-5 bg-slate-50 rounded-[28px] relative border border-slate-100 shadow-inner';
             div.innerHTML = `
                 <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
                 <div class="space-y-3">
-                    <input name="remedio[]" placeholder="Remédio" class="w-full p-3 bg-white rounded-xl text-sm font-bold border-none" required>
-                    <input name="ativo[]" placeholder="Ativo Principal" class="w-full p-3 bg-white rounded-xl text-xs border-none">
+                    <input name="remedio[]" placeholder="Nome do Remédio" class="w-full p-3 bg-white rounded-xl text-sm font-bold border-none shadow-sm" required>
                     <div class="grid grid-cols-2 gap-2">
-                        <input name="vencimento[]" type="date" class="p-3 bg-white rounded-xl text-xs border-none" required>
-                        <input name="dosagem[]" placeholder="Dose" class="p-3 bg-white rounded-xl text-xs border-none">
+                        <input name="ativo[]" placeholder="Ativo Principal" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                        <input name="classe[]" placeholder="Classe" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <input name="posologia[]" placeholder="8/8h" class="p-3 bg-white rounded-xl text-xs border-none">
-                        <input name="duracao[]" placeholder="7 dias" class="p-3 bg-white rounded-xl text-xs border-none">
+                        <input name="formula[]" placeholder="Fórmula" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                        <input name="indicacao[]" placeholder="Indicação" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="flex flex-col"><label class="text-[8px] font-bold text-slate-400 ml-1 mb-0.5 tracking-widest uppercase">Validade</label><input name="vencimento[]" type="date" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm" required></div>
+                        <div class="flex flex-col"><label class="text-[8px] font-bold text-slate-400 ml-1 mb-0.5 tracking-widest uppercase">Dosagem</label><input name="dosagem[]" placeholder="Ex: 1 caps" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input name="posologia[]" placeholder="Frequência (8/8h)" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
+                        <input name="duracao[]" placeholder="Duração (7 dias)" class="p-3 bg-white rounded-xl text-[11px] border-none shadow-sm">
                     </div>
                 </div>
             `;
             container.appendChild(div);
-            lucide.createIcons();
+            refreshIcons();
         }
 
         function handleForm(e, type) {
@@ -440,48 +433,60 @@
                 const meds = [];
                 const names = formData.getAll('remedio[]');
                 const actives = formData.getAll('ativo[]');
+                const classes = formData.getAll('classe[]');
+                const formulas = formData.getAll('formula[]');
+                const indications = formData.getAll('indicacao[]');
                 const valids = formData.getAll('vencimento[]');
                 const doses = formData.getAll('dosagem[]');
                 const posos = formData.getAll('posologia[]');
                 const duras = formData.getAll('duracao[]');
+                
                 for (let i = 0; i < names.length; i++) {
-                    meds.push({ nome: names[i], ativo: actives[i], vencimento: valids[i], dosagem: doses[i], posologia: posos[i], duracao: duras[i] });
+                    meds.push({ 
+                        nome: names[i], ativo: actives[i], classe: classes[i], formula: formulas[i], 
+                        indicacao: indications[i], vencimento: valids[i], dosagem: doses[i], 
+                        posologia: posos[i], duracao: duras[i] 
+                    });
                 }
                 data.medicamentos = meds;
-                delete data['remedio[]']; delete data['ativo[]']; delete data['vencimento[]']; delete data['dosagem[]'];
+                ['remedio[]', 'ativo[]', 'classe[]', 'formula[]', 'indicacao[]', 'vencimento[]', 'dosagem[]', 'posologia[]', 'duracao[]'].forEach(k => delete data[k]);
             }
 
-            if (id) {
-                const idx = state[listName].findIndex(i => i.id === id);
-                state[listName][idx] = { ...state[listName][idx], ...data };
-                saveState(true, 'update', listName, state[listName][idx]);
+            if (id && id !== "") {
+                const idx = state[listName].findIndex(i => String(i.id) === String(id));
+                if (idx !== -1) {
+                    state[listName][idx] = { ...state[listName][idx], ...data };
+                    saveState(true, 'update', listName, state[listName][idx]);
+                }
             } else {
                 data.id = Date.now().toString();
                 data.dataInicio = new Date().toISOString();
                 state[listName].push(data);
                 saveState(true, 'add', listName, data);
+                if(type === 'paciente') activePatientId = data.id;
             }
             
             e.target.reset();
-            if(type === 'paciente' && !activePatientId) activePatientId = data.id;
             switchTab('dashboard');
         }
 
         function deleteItem(list, id) {
             if (!confirm("Confirmar exclusão?")) return;
-            const item = state[list].find(i => i.id === id);
-            state[list] = state[list].filter(i => i.id !== id);
+            const item = state[list].find(i => String(i.id) === String(id));
+            state[list] = state[list].filter(i => String(i.id) !== String(id));
             saveState(true, 'delete', list, item);
         }
 
         function editItem(type, id) {
             const list = type + 's';
-            const item = state[list].find(i => i.id === id);
+            const item = state[list].find(i => String(i.id) === String(id));
+            if(!item) return;
             switchTab(type);
             const form = document.getElementById('form-' + type);
             Array.from(form.elements).forEach(el => {
                 if (el.name && item[el.name]) el.value = item[el.name];
             });
+            refreshIcons();
         }
 
         function updateSelectOptions() {
@@ -495,41 +500,43 @@
         function saveConfig() {
             state.config.scriptUrl = document.getElementById('config-script-url').value;
             saveState();
-            showToast("Configuração Guardada");
+            showToast("✓ URL Guardada");
         }
 
         async function syncWithGoogle(action, type, data) {
             if (!state.config.scriptUrl) return;
-            document.getElementById('sync-indicator').classList.remove('hidden');
+            const loader = document.getElementById('sync-indicator');
+            if(loader) loader.classList.remove('hidden');
             try {
                 await fetch(state.config.scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action, type, data }) });
-                showToast("Nuvem Atualizada");
-            } catch (e) { showToast("Erro Sincronização", "error"); }
-            finally { document.getElementById('sync-indicator').classList.add('hidden'); }
+                showToast("Sincronizado");
+            } catch (e) { showToast("Erro sincronização", "error"); }
+            finally { if(loader) loader.classList.add('hidden'); }
         }
 
         async function fetchFromGoogle() {
             if (!state.config.scriptUrl) return;
-            document.getElementById('sync-indicator').classList.remove('hidden');
+            const loader = document.getElementById('sync-indicator');
+            if(loader) loader.classList.remove('hidden');
             try {
                 const res = await fetch(state.config.scriptUrl + "?action=getAll");
                 const cloud = await res.json();
-                if (cloud) {
+                if (cloud && typeof cloud === 'object') {
                     state = { ...state, ...cloud };
                     saveState();
-                    showToast("Dados Sincronizados");
+                    showToast("Dados atualizados");
                 }
-            } catch (e) { showToast("Erro ao carregar nuvem", "error"); }
-            finally { document.getElementById('sync-indicator').classList.add('hidden'); }
+            } catch (e) { showToast("Erro importar dados", "error"); }
+            finally { if(loader) loader.classList.add('hidden'); }
         }
 
         function showToast(msg, type = "success") {
             const container = document.getElementById('toast-container');
             const t = document.createElement('div');
-            t.className = `p-4 mb-2 rounded-2xl shadow-lg text-white text-xs font-bold text-center transition-all ${type === 'success' ? 'bg-indigo-600' : 'bg-red-500'}`;
+            t.className = `p-4 mb-2 rounded-2xl shadow-xl text-white text-xs font-bold text-center border border-white/20 backdrop-blur-md transition-all duration-300 ${type === 'success' ? 'bg-indigo-600/90' : 'bg-red-500/90'}`;
             t.innerText = msg;
             container.appendChild(t);
-            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 2500);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(-10px)'; setTimeout(() => t.remove(), 500); }, 3000);
         }
 
         function exportData() {
@@ -538,7 +545,7 @@
             a.href = URL.createObjectURL(blob); a.download = 'medfamilia_backup.json'; a.click();
         }
 
-        // --- Eventos de Form ---
+        // --- Eventos de Formulário ---
         document.getElementById('form-paciente').onsubmit = (e) => handleForm(e, 'paciente');
         document.getElementById('form-medico').onsubmit = (e) => handleForm(e, 'medico');
         document.getElementById('form-patologia').onsubmit = (e) => handleForm(e, 'patologia');
