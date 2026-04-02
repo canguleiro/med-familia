@@ -13,7 +13,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         .active-nav-mobile { color: #4f46e5; border-top: 2px solid #4f46e5; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .medicine-row { animation: slideIn 0.2s ease-out; }
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -23,18 +23,18 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Modal Style */
         .modal-overlay { background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); }
+        .chip-active { background-color: #4f46e5 !important; color: white !important; transform: scale(1.05); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
 
     <div class="min-h-screen flex flex-col md:flex-row">
         
-        <!-- SIDEBAR DESKTOP -->
+        <!-- BARRA LATERAL DESKTOP -->
         <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col sticky top-0 h-screen p-6">
             <div class="flex items-center gap-3 mb-10">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
                     <i data-lucide="heart-pulse" class="text-white w-6 h-6"></i>
                 </div>
                 <span class="font-bold text-xl text-indigo-900 tracking-tight">MedFamília</span>
@@ -43,162 +43,145 @@
                 <button onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all font-medium">
                     <i data-lucide="home" class="w-5 h-5"></i> Início
                 </button>
-                <button onclick="switchTab('pacientes')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-medium">
-                    <i data-lucide="users" class="w-5 h-5"></i> Gerir Família
-                </button>
-                <button onclick="switchTab('medicos')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-medium">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i> Médicos
-                </button>
-                <button onclick="switchTab('patologias')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-medium">
-                    <i data-lucide="clipboard-list" class="w-5 h-5"></i> Doenças
-                </button>
                 <button onclick="switchTab('config')" class="w-full flex items-center gap-3 p-3 text-slate-600 hover:bg-indigo-50 rounded-xl transition-all font-medium">
                     <i data-lucide="settings" class="w-5 h-5"></i> Configuração
                 </button>
             </nav>
         </aside>
 
-        <!-- MOBILE BOTTOM NAV -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center z-50 h-16 shadow-2xl px-4">
-            <button onclick="switchTab('dashboard')" id="m-nav-dashboard" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-16 h-full transition-all active-nav-mobile">
+        <!-- NAVEGAÇÃO INFERIOR MOBILE -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center z-50 h-16 px-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <button onclick="switchTab('dashboard')" id="m-nav-dashboard" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-16 h-full active-nav-mobile">
                 <i data-lucide="home" class="w-5 h-5"></i>
                 <span class="text-[10px] font-bold">Início</span>
             </button>
             
-            <!-- Botão de Cadastro Dropdown -->
+            <!-- Botão Central Dropdown -->
             <div class="relative">
-                <button onclick="toggleActionMenu()" class="bg-indigo-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg -mt-6 active:scale-90 transition-transform">
-                    <i data-lucide="plus" class="w-6 h-6"></i>
+                <button onclick="toggleActionMenu()" class="bg-indigo-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 -mt-8 active:scale-90 transition-transform">
+                    <i data-lucide="plus" class="w-7 h-7"></i>
                 </button>
-                <!-- Menu Dropdown Mobile -->
-                <div id="action-menu" class="hidden absolute bottom-20 left-1/2 -translate-x-1/2 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col z-[60]">
-                    <button onclick="openAction('tratamento')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50"><i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> Novo Tratamento</button>
-                    <button onclick="openAction('paciente')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50"><i data-lucide="user-plus" class="w-4 h-4 text-blue-500"></i> Cadastrar Membro</button>
-                    <button onclick="openAction('medico')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50"><i data-lucide="stethoscope" class="w-4 h-4 text-green-500"></i> Adicionar Médico</button>
-                    <button onclick="openAction('patologia')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-slate-50"><i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Nova Patologia</button>
+                <!-- Menu Dropdown -->
+                <div id="action-menu" class="hidden absolute bottom-20 left-1/2 -translate-x-1/2 w-56 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col z-[60]">
+                    <button onclick="openAction('tratamento')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100 border-b border-slate-50"><i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> Novo Tratamento</button>
+                    <button onclick="openAction('paciente')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100 border-b border-slate-50"><i data-lucide="user-plus" class="w-4 h-4 text-blue-500"></i> Membro da Família</button>
+                    <button onclick="openAction('medico')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100 border-b border-slate-50"><i data-lucide="stethoscope" class="w-4 h-4 text-green-500"></i> Médico</button>
+                    <button onclick="openAction('patologia')" class="p-4 text-left text-sm font-semibold flex items-center gap-3 hover:bg-indigo-50 active:bg-indigo-100"><i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Patologia / Doença</button>
                 </div>
             </div>
 
-            <button onclick="switchTab('config')" id="m-nav-config" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-16 h-full transition-all">
+            <button onclick="switchTab('config')" id="m-nav-config" class="flex flex-col items-center justify-center gap-1 text-slate-400 w-16 h-full">
                 <i data-lucide="settings" class="w-5 h-5"></i>
                 <span class="text-[10px] font-bold">Ajustes</span>
             </button>
         </nav>
 
-        <!-- CONTEÚDO -->
-        <main class="flex-1 bg-slate-50 pb-20 md:pb-0 overflow-y-auto h-screen">
+        <!-- ÁREA DE CONTEÚDO -->
+        <main class="flex-1 bg-slate-50 pb-24 md:pb-0 overflow-y-auto h-screen">
             
             <!-- HEADER MOBILE -->
-            <div class="md:hidden bg-white px-6 py-5 flex flex-col gap-1 sticky top-0 z-40 border-b border-slate-50 shadow-sm">
+            <div class="md:hidden bg-white px-6 py-5 flex flex-col gap-1 sticky top-0 z-40 border-b border-slate-50">
                 <div class="flex justify-between items-center">
                     <h1 class="text-xl font-extrabold text-indigo-950">MedFamília</h1>
                     <div id="sync-indicator" class="hidden">
                         <div class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 </div>
-                <p id="sub-header-text" class="text-[11px] text-slate-400 font-medium tracking-wide uppercase">Selecione um familiar</p>
+                <p id="sub-header-text" class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Saúde em Família</p>
             </div>
 
-            <div id="main-content-area" class="p-6">
-                <!-- Dashboard / Home View -->
-                <div id="tab-dashboard" class="tab-content space-y-8">
-                    
-                    <!-- Seleção de Paciente (Chips) -->
-                    <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2" id="patient-chips-container">
-                        <!-- Chips gerados via JS -->
-                    </div>
+            <div class="p-6">
+                <!-- TELA INICIAL: Seleção e Lista -->
+                <div id="tab-dashboard" class="tab-content space-y-6">
+                    <!-- Chips de Pacientes -->
+                    <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2" id="patient-chips-container"></div>
 
-                    <!-- Lista de Tratamentos do Paciente Selecionado -->
+                    <!-- Lista de Tratamentos -->
                     <div class="space-y-4" id="patient-treatments-view">
-                        <div class="text-center py-20">
-                            <div class="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="users" class="text-slate-300 w-8 h-8"></i>
-                            </div>
-                            <p class="text-slate-400 text-sm">Escolha alguém para ver o histórico</p>
-                        </div>
+                        <!-- Conteúdo gerado via JS -->
                     </div>
                 </div>
 
-                <!-- Abas de Cadastro (Escondidas no fluxo principal mobile, acessadas via dropdown) -->
-                <div id="tab-pacientes" class="tab-content hidden space-y-6 max-w-lg mx-auto">
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <h2 id="title-form-paciente" class="font-bold text-lg mb-6">Cadastro de Familiar</h2>
-                        <form id="form-paciente" class="space-y-5">
+                <!-- FORMULÁRIO: MEMBRO -->
+                <div id="tab-paciente" class="tab-content hidden max-w-lg mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100">
+                        <h2 class="font-bold text-lg mb-6 flex items-center gap-2"><i data-lucide="users" class="text-indigo-500"></i> Membro da Família</h2>
+                        <form id="form-paciente" class="space-y-4">
                             <input type="hidden" name="id">
-                            <input name="nome" placeholder="Nome Completo" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" required>
-                            <input name="nascimento" type="date" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" required>
-                            <textarea name="historico" placeholder="Observações de saúde importantes..." class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" rows="3"></textarea>
-                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg shadow-indigo-100">Guardar Membro</button>
+                            <input name="nome" placeholder="Nome" class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-indigo-200" required>
+                            <input name="nascimento" type="date" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
+                            <textarea name="historico" placeholder="Notas de saúde..." class="w-full p-4 bg-slate-50 rounded-2xl outline-none" rows="3"></textarea>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Guardar Membro</button>
                         </form>
                     </div>
-                    <div id="list-pacientes" class="space-y-3"></div>
+                    <div id="list-pacientes" class="space-y-2"></div>
                 </div>
 
-                <div id="tab-medicos" class="tab-content hidden space-y-6 max-w-lg mx-auto">
-                    <div class="bg-white p-6 rounded-3xl border border-slate-100">
-                        <h2 id="title-form-medico" class="font-bold text-lg mb-6">Cadastro de Médico</h2>
-                        <form id="form-medico" class="space-y-5">
+                <!-- FORMULÁRIO: MÉDICO -->
+                <div id="tab-medico" class="tab-content hidden max-w-lg mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100">
+                        <h2 class="font-bold text-lg mb-6">Novo Médico</h2>
+                        <form id="form-medico" class="space-y-4">
                             <input type="hidden" name="id">
-                            <input name="nome" placeholder="Nome do Médico" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" required>
-                            <input name="especialidade" placeholder="Especialidade" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" required>
-                            <input name="contato" placeholder="Contacto (Opcional)" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar Médico</button>
-                        </form>
-                    </div>
-                    <div id="list-medicos" class="space-y-3"></div>
-                </div>
-
-                <div id="tab-patologias" class="tab-content hidden space-y-6 max-w-lg mx-auto">
-                    <div class="bg-white p-6 rounded-3xl border border-slate-100">
-                        <h2 id="title-form-patologia" class="font-bold text-lg mb-6">Cadastro de Doença</h2>
-                        <form id="form-patologia" class="space-y-5">
-                            <input type="hidden" name="id">
-                            <input name="nome" placeholder="Nome da Patologia" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" required>
-                            <textarea name="sintomas" placeholder="Principais sintomas..." class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" rows="2"></textarea>
-                            <textarea name="diagnostico" placeholder="Notas sobre o diagnóstico..." class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" rows="2"></textarea>
+                            <input name="nome" placeholder="Nome do Médico" class="w-full p-4 bg-slate-50 rounded-2xl" required>
+                            <input name="especialidade" placeholder="Especialidade" class="w-full p-4 bg-slate-50 rounded-2xl" required>
+                            <input name="contato" placeholder="Contacto" class="w-full p-4 bg-slate-50 rounded-2xl">
                             <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar</button>
                         </form>
                     </div>
-                    <div id="list-patologias" class="space-y-3"></div>
+                    <div id="list-medicos" class="space-y-2"></div>
                 </div>
 
-                <div id="tab-tratamentos" class="tab-content hidden space-y-6 max-w-lg mx-auto">
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <h3 id="title-form-tratamento" class="font-bold text-lg mb-6">Novo Tratamento</h3>
+                <!-- FORMULÁRIO: PATOLOGIA -->
+                <div id="tab-patologia" class="tab-content hidden max-w-lg mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100">
+                        <h2 class="font-bold text-lg mb-6">Nova Patologia</h2>
+                        <form id="form-patologia" class="space-y-4">
+                            <input type="hidden" name="id">
+                            <input name="nome" placeholder="Nome da Patologia" class="w-full p-4 bg-slate-50 rounded-2xl" required>
+                            <textarea name="sintomas" placeholder="Sintomas comuns..." class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea>
+                            <textarea name="diagnostico" placeholder="Notas de diagnóstico..." class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar</button>
+                        </form>
+                    </div>
+                    <div id="list-patologias" class="space-y-2"></div>
+                </div>
+
+                <!-- FORMULÁRIO: TRATAMENTO -->
+                <div id="tab-tratamento" class="tab-content hidden max-w-lg mx-auto">
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100">
+                        <h3 class="font-bold text-lg mb-6">Novo Tratamento</h3>
                         <form id="form-tratamento" class="space-y-5">
                             <input type="hidden" name="id">
-                            <select name="pacienteId" id="select-paciente" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" required></select>
-                            <select name="medicoId" id="select-medico" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" required></select>
-                            <select name="patologiaId" id="select-patologia" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" required></select>
+                            <select name="pacienteId" id="select-paciente" class="w-full p-4 bg-slate-50 rounded-2xl" required></select>
+                            <select name="medicoId" id="select-medico" class="w-full p-4 bg-slate-50 rounded-2xl" required></select>
+                            <select name="patologiaId" id="select-patologia" class="w-full p-4 bg-slate-50 rounded-2xl" required></select>
 
                             <div class="space-y-4">
-                                <div class="flex items-center justify-between px-2">
-                                    <h4 class="text-xs font-bold text-slate-400 uppercase">Medicamentos</h4>
-                                    <button type="button" onclick="addMedicineRow()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-bold">+ Adicionar</button>
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Medicamentos</h4>
+                                    <button type="button" onclick="addMedicineRow()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full font-bold">+ Adicionar</button>
                                 </div>
                                 <div id="medicines-container" class="space-y-4"></div>
                             </div>
 
-                            <textarea name="notas" placeholder="Observações finais..." class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" rows="2"></textarea>
-                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Registar Tratamento</button>
+                            <textarea name="notas" placeholder="Observações do tratamento..." class="w-full p-4 bg-slate-50 rounded-2xl" rows="2"></textarea>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg shadow-indigo-100">Registar Agora</button>
                         </form>
                     </div>
                 </div>
 
-                <!-- Config -->
-                <div id="tab-config" class="tab-content hidden space-y-6 max-w-lg mx-auto">
-                    <div class="bg-white p-8 rounded-3xl border border-slate-100">
+                <!-- CONFIGURAÇÃO -->
+                <div id="tab-config" class="tab-content hidden max-w-lg mx-auto">
+                    <div class="bg-white p-8 rounded-[32px] border border-slate-100">
                         <h2 class="font-bold text-lg mb-6">Configuração Nuvem</h2>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">URL do App Script</label>
-                                <input id="config-script-url" type="text" class="w-full p-4 mt-1 bg-slate-50 border border-slate-100 rounded-2xl outline-none" placeholder="https://script.google.com/...">
+                        <div class="space-y-4">
+                            <input id="config-script-url" type="text" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl" placeholder="Link do Apps Script">
+                            <div class="flex gap-2">
+                                <button onclick="saveConfig()" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold">Guardar URL</button>
+                                <button onclick="fetchFromGoogle()" class="p-4 bg-slate-100 rounded-2xl"><i data-lucide="refresh-cw"></i></button>
                             </div>
-                            <div class="flex gap-3">
-                                <button onclick="saveConfig()" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Guardar URL</button>
-                                <button onclick="testSync()" class="bg-slate-100 p-4 rounded-2xl text-slate-600"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
-                            </div>
-                            <div id="config-status" class="hidden p-3 rounded-xl text-xs text-center font-bold"></div>
+                            <button onclick="exportData()" class="w-full text-sm text-slate-400 py-4 font-medium flex items-center justify-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Exportar Backup JSON</button>
                         </div>
                     </div>
                 </div>
@@ -206,24 +189,22 @@
         </main>
     </div>
 
-    <!-- MODAL DE DETALHES DO TRATAMENTO (Mobile) -->
-    <div id="treatment-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-end md:items-center justify-center p-0 md:p-6 transition-all">
-        <div class="bg-white w-full max-w-2xl h-[90vh] md:h-auto md:max-h-[90vh] rounded-t-[40px] md:rounded-[32px] overflow-hidden flex flex-col shadow-2xl translate-y-full transition-transform duration-300" id="modal-content">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-4 md:hidden"></div>
-            <div class="flex justify-between items-center px-8 py-4 border-b border-slate-50">
-                <h2 class="font-extrabold text-indigo-900 text-xl" id="modal-title">Detalhes</h2>
+    <!-- MODAL DE DETALHES -->
+    <div id="treatment-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-end justify-center transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl h-[85vh] rounded-t-[40px] shadow-2xl flex flex-col translate-y-full transition-transform duration-300" id="modal-content">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto my-4"></div>
+            <div class="px-8 py-4 border-b border-slate-50 flex justify-between items-center">
+                <h2 class="font-bold text-xl text-indigo-900" id="modal-title">Detalhes</h2>
                 <button onclick="closeTreatmentModal()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <div class="flex-1 overflow-y-auto p-8 space-y-6" id="modal-body">
-                <!-- Detalhes preenchidos via JS -->
-            </div>
+            <div class="flex-1 overflow-y-auto p-8 space-y-6" id="modal-body"></div>
         </div>
     </div>
 
-    <div id="toast-container" class="fixed top-4 left-4 right-4 z-[200] pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-6 left-6 right-6 z-[200] pointer-events-none"></div>
 
     <script>
-        // --- State ---
+        // --- Estado Global ---
         let state = {
             pacientes: JSON.parse(localStorage.getItem('med_pacientes') || '[]'),
             medicos: JSON.parse(localStorage.getItem('med_medicos') || '[]'),
@@ -234,79 +215,48 @@
 
         let activePatientId = null;
 
-        // --- Helpers ---
-        const safeDate = (d) => {
-            if (!d) return "-";
-            const dt = new Date(d);
-            return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('pt-BR');
+        // --- Inicialização ---
+        window.onload = () => {
+            const urlInput = document.getElementById('config-script-url');
+            if (urlInput) urlInput.value = state.config.scriptUrl;
+            
+            // Inicia com o primeiro paciente se houver
+            if (state.pacientes.length > 0) activePatientId = state.pacientes[0].id;
+            
+            renderAll();
+            if (state.config.scriptUrl) fetchFromGoogle();
+            setTimeout(() => lucide.createIcons(), 500);
         };
 
-        function refreshIcons() { if (window.lucide) window.lucide.createIcons(); }
-
-        function saveState(shouldSync = false, action = 'update', type = null, data = null) {
-            localStorage.setItem('med_pacientes', JSON.stringify(state.pacientes));
-            localStorage.setItem('med_medicos', JSON.stringify(state.medicos));
-            localStorage.setItem('med_patologias', JSON.stringify(state.patologias));
-            localStorage.setItem('med_tratamentos', JSON.stringify(state.tratamentos));
-            localStorage.setItem('med_config', JSON.stringify(state.config));
-            renderAll();
-            if (shouldSync && state.config.scriptUrl) syncWithGoogle(action, type, data);
-        }
-
-        // --- UI Interactions ---
-        function toggleActionMenu() {
-            const menu = document.getElementById('action-menu');
-            menu.classList.toggle('hidden');
-        }
-
-        function openAction(tab) {
-            document.getElementById('action-menu').classList.add('hidden');
-            switchTab(tab);
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            
-            // Navegação Mobile
-            document.querySelectorAll('.nav-item-mobile').forEach(el => el.classList.remove('active-nav-mobile'));
-            const mob = document.getElementById('m-nav-' + tabId);
-            if (mob) mob.classList.add('active-nav-mobile');
-
-            // Reset Subheader
-            const sub = document.getElementById('sub-header-text');
-            if(tabId === 'dashboard') sub.innerText = "Histórico Familiar";
-            else sub.innerText = "Gerenciar " + tabId;
-
-            renderAll();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function selectPatient(id) {
-            activePatientId = id;
-            renderPatientChips();
-            renderPatientTreatments();
-        }
-
-        // --- Renderers ---
+        // --- Funções de Renderização ---
         function renderAll() {
             renderPatientChips();
             renderPatientTreatments();
-            renderLists(); // Pacientes, Medicos, etc (para gestão)
-            updateSelects();
-            refreshIcons();
+            renderManagementLists();
+            updateSelectOptions();
+            lucide.createIcons();
         }
 
         function renderPatientChips() {
             const container = document.getElementById('patient-chips-container');
             if (!container) return;
 
+            if (state.pacientes.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 italic px-2">Adicione membros da família no menu +</p>';
+                return;
+            }
+
             container.innerHTML = state.pacientes.map(p => `
-                <button onclick="selectPatient('${p.id}')" 
-                    class="flex-shrink-0 px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-sm ${activePatientId === p.id ? 'bg-indigo-600 text-white shadow-indigo-100 scale-105' : 'bg-white text-slate-500 border border-slate-100'}">
+                <button onclick="setActivePatient('${p.id}')" 
+                    class="flex-shrink-0 px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-sm ${activePatientId === p.id ? 'chip-active' : 'bg-white text-slate-500 border border-slate-100'}">
                     ${p.nome}
                 </button>
-            `).join('') || '<p class="text-xs text-slate-300 px-4">Nenhum membro cadastrado.</p>';
+            `).join('');
+        }
+
+        function setActivePatient(id) {
+            activePatientId = id;
+            renderAll();
         }
 
         function renderPatientTreatments() {
@@ -314,40 +264,85 @@
             if (!view) return;
 
             if (!activePatientId) {
-                view.innerHTML = `<div class="text-center py-20 text-slate-400 text-sm"><div class="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="users" class="text-slate-300"></i></div>Selecione alguém para ver o histórico</div>`;
-                refreshIcons();
+                view.innerHTML = '<div class="text-center py-20 text-slate-300">Selecione um membro</div>';
                 return;
             }
 
-            const patientTrats = state.tratamentos.filter(t => t.pacienteId === activePatientId);
-            
-            if (patientTrats.length === 0) {
-                view.innerHTML = `<div class="text-center py-20 text-slate-400 text-sm">Nenhum tratamento registrado para este membro.</div>`;
+            const trats = state.tratamentos.filter(t => t.pacienteId === activePatientId);
+
+            if (trats.length === 0) {
+                view.innerHTML = `
+                    <div class="text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200">
+                        <p class="text-slate-400 text-sm">Sem tratamentos registados para este membro.</p>
+                    </div>`;
                 return;
             }
 
-            view.innerHTML = `<h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Registros de Saúde</h3>` + 
-                patientTrats.reverse().map(t => {
-                const pat = state.patologias.find(p => p.id === t.patologiaId);
-                return `
-                    <div onclick="showTreatmentDetail('${t.id}')" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex justify-between items-center active:scale-[0.98] transition-all group">
-                        <div class="flex items-center gap-4">
+            view.innerHTML = '<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Histórico Recente</h3>' + 
+                trats.reverse().map(t => {
+                    const pat = state.patologias.find(p => p.id === t.patologiaId);
+                    return `
+                        <div onclick="showDetail('${t.id}')" class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4 active:scale-95 transition-all">
                             <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
                                 <i data-lucide="clipboard-list" class="w-6 h-6"></i>
                             </div>
-                            <div>
-                                <h4 class="font-extrabold text-slate-800">${pat ? pat.nome : 'Tratamento'}</h4>
-                                <p class="text-xs text-slate-400 font-medium">${safeDate(t.dataInicio)} • ${t.medicamentos?.length || 0} medicamentos</p>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-slate-800">${pat ? pat.nome : 'Tratamento'}</h4>
+                                <p class="text-xs text-slate-400">${new Date(t.dataInicio).toLocaleDateString('pt-BR')} • ${t.medicamentos?.length || 0} medicamentos</p>
                             </div>
+                            <i data-lucide="chevron-right" class="text-slate-300 w-5 h-5"></i>
                         </div>
-                        <i data-lucide="chevron-right" class="text-slate-300 w-5 h-5 group-hover:text-indigo-400"></i>
-                    </div>
-                `;
-            }).join('');
-            refreshIcons();
+                    `;
+                }).join('');
+            lucide.createIcons();
         }
 
-        function showTreatmentDetail(id) {
+        function renderManagementLists() {
+            ['paciente', 'medico', 'patologia'].forEach(type => {
+                const list = document.getElementById(`list-${type}s`);
+                if (!list) return;
+                list.innerHTML = state[`${type}s`].map(item => `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-50 flex justify-between items-center shadow-sm">
+                        <span class="text-sm font-bold text-slate-700">${item.nome}</span>
+                        <div class="flex gap-2">
+                            <button onclick="editItem('${type}', '${item.id}')" class="text-indigo-400 p-2"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            <button onclick="deleteItem('${type}s', '${item.id}')" class="text-red-300 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // --- Menu e Modal ---
+        function toggleActionMenu() { document.getElementById('action-menu').classList.toggle('hidden'); }
+        
+        function openAction(tab) {
+            document.getElementById('action-menu').classList.add('hidden');
+            if (tab === 'tratamento') {
+                const container = document.getElementById('medicines-container');
+                container.innerHTML = '';
+                addMedicineRow();
+            }
+            switchTab(tab);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item-mobile').forEach(el => el.classList.remove('active-nav-mobile'));
+            if (tabId === 'dashboard') document.getElementById('m-nav-dashboard').classList.add('active-nav-mobile');
+            if (tabId === 'config') document.getElementById('m-nav-config').classList.add('active-nav-mobile');
+
+            const headerText = document.getElementById('sub-header-text');
+            headerText.innerText = tabId === 'dashboard' ? 'Saúde em Família' : 'Gestão de ' + tabId;
+            
+            renderAll();
+            window.scrollTo(0, 0);
+        }
+
+        function showDetail(id) {
             const t = state.tratamentos.find(i => i.id === id);
             if (!t) return;
 
@@ -355,54 +350,43 @@
             const med = state.medicos.find(m => m.id === t.medicoId);
             const pat = state.patologias.find(p => p.id === t.patologiaId);
 
-            document.getElementById('modal-title').innerText = pat ? pat.nome : 'Tratamento';
+            document.getElementById('modal-title').innerText = pat ? pat.nome : 'Detalhes';
             
-            let medsHtml = (t.medicamentos || []).map(m => `
-                <div class="bg-slate-50 p-5 rounded-3xl space-y-2 border border-slate-100">
+            const medsHtml = (t.medicamentos || []).map(m => `
+                <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-2">
                     <div class="flex justify-between items-start">
-                        <h5 class="font-bold text-indigo-900">${m.nome}</h5>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Val: ${safeDate(m.vencimento)}</span>
+                        <span class="font-extrabold text-indigo-950">${m.nome}</span>
+                        <span class="text-[9px] bg-white px-2 py-1 rounded-full border border-slate-100 font-bold">Val: ${m.vencimento}</span>
                     </div>
-                    <p class="text-xs text-indigo-600 font-medium">${m.ativo || ''} ${m.classe ? '• '+m.classe : ''}</p>
-                    <div class="grid grid-cols-2 gap-4 pt-2">
-                        <div class="text-[11px] text-slate-500 flex items-center gap-2"><i data-lucide="clock" class="w-3 h-3"></i> ${m.posologia || '-'}</div>
-                        <div class="text-[11px] text-slate-500 flex items-center gap-2"><i data-lucide="calendar" class="w-3 h-3"></i> ${m.duracao || '-'}</div>
+                    <p class="text-[11px] text-indigo-500 font-bold uppercase tracking-tight">${m.ativo || 'Princípio Ativo não inf.'}</p>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/50">
+                        <div class="text-[11px] text-slate-500 flex items-center gap-2 font-medium"><i data-lucide="clock" class="w-3 h-3 text-indigo-300"></i> ${m.posologia || '-'}</div>
+                        <div class="text-[11px] text-slate-500 flex items-center gap-2 font-medium"><i data-lucide="calendar" class="w-3 h-3 text-indigo-300"></i> ${m.duracao || '-'}</div>
                     </div>
                 </div>
             `).join('');
 
             document.getElementById('modal-body').innerHTML = `
-                <div class="flex items-center gap-3 px-1">
-                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">${pac?.nome.charAt(0)}</div>
-                    <span class="text-sm font-bold text-slate-700">${pac?.nome}</span>
-                    <span class="text-slate-300">|</span>
-                    <span class="text-xs text-slate-400 font-bold">${safeDate(t.dataInicio)}</span>
+                <div class="flex items-center gap-3 bg-indigo-50 p-4 rounded-2xl">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">${pac?.nome.charAt(0)}</div>
+                    <div>
+                        <p class="text-xs text-indigo-400 font-bold uppercase tracking-tighter">Paciente</p>
+                        <p class="font-bold text-slate-800">${pac?.nome}</p>
+                    </div>
                 </div>
-
                 <div class="space-y-4">
-                    <h4 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Prescrição</h4>
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Prescrição Médica</p>
                     ${medsHtml}
                 </div>
-
-                <div class="bg-indigo-950 p-6 rounded-3xl text-white">
-                    <div class="flex items-center gap-2 mb-4 opacity-70">
-                        <i data-lucide="user-check" class="w-4 h-4"></i>
-                        <span class="text-xs font-bold uppercase">Médico Assistente</span>
-                    </div>
-                    <p class="font-bold text-lg">${med ? med.nome : 'Não informado'}</p>
-                    <p class="text-xs text-indigo-300 font-medium">${med ? med.especialidade : ''}</p>
+                <div class="bg-slate-900 p-6 rounded-[32px] text-white space-y-1">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Médico Assistente</p>
+                    <p class="font-bold text-lg">${med ? med.nome : 'N/A'}</p>
+                    <p class="text-xs text-indigo-400 font-medium">${med ? med.especialidade : ''}</p>
                 </div>
-
-                ${t.notas ? `
-                    <div class="space-y-2">
-                        <h4 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Observações</h4>
-                        <p class="bg-white border border-slate-100 p-5 rounded-3xl text-sm italic text-slate-600 leading-relaxed shadow-sm">"${t.notas}"</p>
-                    </div>
-                ` : ''}
-                
-                <div class="pt-6 flex gap-3">
-                    <button onclick="deleteItem('${t.id}', 'tratamentos'); closeTreatmentModal();" class="flex-1 p-4 rounded-2xl bg-red-50 text-red-600 font-bold text-sm">Apagar Registro</button>
-                    <button onclick="closeTreatmentModal()" class="flex-1 p-4 rounded-2xl bg-slate-100 text-slate-600 font-bold text-sm">Fechar</button>
+                ${t.notes ? `<div class="bg-white border p-5 rounded-2xl italic text-sm text-slate-500">"${t.notes}"</div>` : ''}
+                <div class="pt-4 flex gap-2">
+                    <button onclick="deleteItem('tratamentos', '${t.id}'); closeTreatmentModal();" class="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-bold">Apagar</button>
+                    <button onclick="closeTreatmentModal()" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">Fechar</button>
                 </div>
             `;
 
@@ -410,7 +394,7 @@
             const content = document.getElementById('modal-content');
             modal.classList.remove('hidden');
             setTimeout(() => content.style.transform = "translateY(0)", 10);
-            refreshIcons();
+            lucide.createIcons();
         }
 
         function closeTreatmentModal() {
@@ -419,155 +403,108 @@
             setTimeout(() => document.getElementById('treatment-modal').classList.add('hidden'), 300);
         }
 
-        // --- Management Lists ---
-        function renderLists() {
-            ['pacientes', 'medicos', 'patologias'].forEach(type => {
-                const list = document.getElementById('list-' + type);
-                if (!list) return;
-                list.innerHTML = state[type].map(item => `
-                    <div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center">
-                        <div class="text-sm font-bold text-slate-700">${item.nome}</div>
-                        <div class="flex gap-2">
-                            <button onclick="startEdit('${type.slice(0,-1)}', '${item.id}')" class="text-indigo-400 p-2"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                            <button onclick="deleteItem('${item.id}', '${type}')" class="text-red-400 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                `).join('');
-            });
-        }
-
-        // --- Logic Handlers (Edit, Save, Sync) ---
-        function startEdit(type, id) {
-            const listName = type + 's';
-            const item = state[listName].find(i => i.id === id);
-            if (!item) return;
-
-            const form = document.getElementById('form-' + type);
-            const title = document.getElementById('title-form-' + type);
-            title.innerText = "Editar";
-
-            Array.from(form.elements).forEach(input => {
-                if (input.name && item[input.name] !== undefined) input.value = item[input.name];
-            });
-
-            if (type === 'tratamento') {
-                const container = document.getElementById('medicines-container');
-                container.innerHTML = '';
-                (item.medicamentos || []).forEach(m => addMedicineRowWithData(m));
-            }
-            form.scrollIntoView({ behavior: 'smooth' });
-            refreshIcons();
-        }
-
-        function cancelEdit(type) {
-            const form = document.getElementById('form-' + type);
-            form.reset();
-            form.elements['id'].value = '';
-            if (type === 'tratamento') {
-                document.getElementById('medicines-container').innerHTML = '';
-                addMedicineRow();
-            }
-            refreshIcons();
-        }
-
-        function addMedicineRow() { addMedicineRowWithData({}); }
-        function addMedicineRowWithData(data) {
+        // --- Logica de Formulários ---
+        function addMedicineRow() {
             const container = document.getElementById('medicines-container');
-            const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
+            const id = 'med-' + Date.now();
             const div = document.createElement('div');
-            div.id = rowId;
-            div.className = 'medicine-row p-4 bg-slate-50 rounded-2xl relative border border-slate-100';
+            div.id = id;
+            div.className = 'medicine-row p-5 bg-slate-50 rounded-3xl relative border border-slate-100';
             div.innerHTML = `
-                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
                 <div class="space-y-3">
-                    <input name="remedio[]" value="${data.nome || ''}" placeholder="Nome Comercial" class="w-full p-3 bg-white rounded-xl text-sm font-bold outline-none" required>
+                    <input name="remedio[]" placeholder="Remédio" class="w-full p-3 bg-white rounded-xl text-sm font-bold border-none" required>
+                    <input name="ativo[]" placeholder="Ativo Principal" class="w-full p-3 bg-white rounded-xl text-xs border-none">
                     <div class="grid grid-cols-2 gap-2">
-                        <input name="ativo[]" value="${data.ativo || ''}" placeholder="Ativo" class="p-2.5 bg-white rounded-xl text-[11px] outline-none">
-                        <input name="classe[]" value="${data.classe || ''}" placeholder="Classe" class="p-2.5 bg-white rounded-xl text-[11px] outline-none">
+                        <input name="vencimento[]" type="date" class="p-3 bg-white rounded-xl text-xs border-none" required>
+                        <input name="dosagem[]" placeholder="Dose" class="p-3 bg-white rounded-xl text-xs border-none">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <input name="vencimento[]" value="${data.vencimento || ''}" type="date" class="p-2 bg-white rounded-xl text-[11px]" required>
-                        <input name="dosagem[]" value="${data.dosagem || ''}" placeholder="Dose" class="p-2 bg-white rounded-xl text-[11px]">
+                        <input name="posologia[]" placeholder="8/8h" class="p-3 bg-white rounded-xl text-xs border-none">
+                        <input name="duracao[]" placeholder="7 dias" class="p-3 bg-white rounded-xl text-xs border-none">
                     </div>
                 </div>
             `;
             container.appendChild(div);
-            refreshIcons();
+            lucide.createIcons();
         }
 
-        function updateSelects() {
-            const p = document.getElementById('select-paciente');
-            const m = document.getElementById('select-medico');
-            const pat = document.getElementById('select-patologia');
-            if(!p || !m || !pat) return;
-            p.innerHTML = '<option value="">Para quem?</option>' + state.pacientes.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-            m.innerHTML = '<option value="">Qual médico?</option>' + state.medicos.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-            pat.innerHTML = '<option value="">Qual diagnóstico?</option>' + state.patologias.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-        }
-
-        function showToast(msg, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `p-4 mb-2 rounded-2xl shadow-2xl text-white text-xs font-bold text-center border border-white/20 backdrop-blur ${type === 'success' ? 'bg-indigo-600' : 'bg-red-600'}`;
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function deleteItem(id, listName) {
-            if(!confirm("Apagar registro?")) return;
-            const item = state[listName].find(i => i.id === id);
-            state[listName] = state[listName].filter(item => item.id !== id);
-            saveState(true, 'delete', listName, item);
-        }
-
-        function saveConfig() {
-            state.config.scriptUrl = document.getElementById('config-script-url').value;
-            saveState();
-            showToast("✓ Configuração Salva");
-        }
-
-        function handleFormSubmit(e, type, listName) {
+        function handleForm(e, type) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
-            const id = formData.get('id');
+            const listName = type + 's';
+            const id = data.id;
 
             if (type === 'tratamento') {
                 const meds = [];
                 const names = formData.getAll('remedio[]');
                 const actives = formData.getAll('ativo[]');
-                const classes = formData.getAll('classe[]');
                 const valids = formData.getAll('vencimento[]');
                 const doses = formData.getAll('dosagem[]');
+                const posos = formData.getAll('posologia[]');
+                const duras = formData.getAll('duracao[]');
                 for (let i = 0; i < names.length; i++) {
-                    meds.push({ nome: names[i], ativo: actives[i], classe: classes[i], vencimento: valids[i], dosagem: doses[i] });
+                    meds.push({ nome: names[i], ativo: actives[i], vencimento: valids[i], dosagem: doses[i], posologia: posos[i], duracao: duras[i] });
                 }
                 data.medicamentos = meds;
-                delete data['remedio[]']; delete data['ativo[]']; delete data['classe[]']; delete data['vencimento[]']; delete data['dosagem[]'];
+                delete data['remedio[]']; delete data['ativo[]']; delete data['vencimento[]']; delete data['dosagem[]'];
             }
 
-            if (id && id !== "") {
+            if (id) {
                 const idx = state[listName].findIndex(i => i.id === id);
                 state[listName][idx] = { ...state[listName][idx], ...data };
                 saveState(true, 'update', listName, state[listName][idx]);
             } else {
-                const novo = { ...data, id: Date.now().toString(), dataInicio: new Date().toISOString() };
-                state[listName].push(novo);
-                saveState(true, 'add', listName, novo);
+                data.id = Date.now().toString();
+                data.dataInicio = new Date().toISOString();
+                state[listName].push(data);
+                saveState(true, 'add', listName, data);
             }
-            cancelEdit(type);
+            
+            e.target.reset();
+            if(type === 'paciente' && !activePatientId) activePatientId = data.id;
             switchTab('dashboard');
         }
 
-        // --- Sync ---
+        function deleteItem(list, id) {
+            if (!confirm("Confirmar exclusão?")) return;
+            const item = state[list].find(i => i.id === id);
+            state[list] = state[list].filter(i => i.id !== id);
+            saveState(true, 'delete', list, item);
+        }
+
+        function editItem(type, id) {
+            const list = type + 's';
+            const item = state[list].find(i => i.id === id);
+            switchTab(type);
+            const form = document.getElementById('form-' + type);
+            Array.from(form.elements).forEach(el => {
+                if (el.name && item[el.name]) el.value = item[el.name];
+            });
+        }
+
+        function updateSelectOptions() {
+            const selects = { paciente: 'pacientes', medico: 'medicos', patologia: 'patologias' };
+            for (let [id, list] of Object.entries(selects)) {
+                const el = document.getElementById('select-' + id);
+                if (el) el.innerHTML = `<option value="">Escolher ${id}</option>` + state[list].map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+            }
+        }
+
+        function saveConfig() {
+            state.config.scriptUrl = document.getElementById('config-script-url').value;
+            saveState();
+            showToast("Configuração Guardada");
+        }
+
         async function syncWithGoogle(action, type, data) {
             if (!state.config.scriptUrl) return;
             document.getElementById('sync-indicator').classList.remove('hidden');
             try {
                 await fetch(state.config.scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action, type, data }) });
-                showToast("Sincronizado!");
-            } catch (e) { showToast("Erro sincronia", "error"); }
+                showToast("Nuvem Atualizada");
+            } catch (e) { showToast("Erro Sincronização", "error"); }
             finally { document.getElementById('sync-indicator').classList.add('hidden'); }
         }
 
@@ -576,29 +513,37 @@
             document.getElementById('sync-indicator').classList.remove('hidden');
             try {
                 const res = await fetch(state.config.scriptUrl + "?action=getAll");
-                const cloudData = await res.json();
-                if (cloudData) {
-                    state = { ...state, ...cloudData };
+                const cloud = await res.json();
+                if (cloud) {
+                    state = { ...state, ...cloud };
                     saveState();
-                    showToast("Dados Atualizados!");
+                    showToast("Dados Sincronizados");
                 }
-            } catch (e) { showToast("Erro importar", "error"); }
+            } catch (e) { showToast("Erro ao carregar nuvem", "error"); }
             finally { document.getElementById('sync-indicator').classList.add('hidden'); }
         }
 
-        // --- Init ---
-        document.getElementById('form-paciente').onsubmit = (e) => handleFormSubmit(e, 'paciente', 'pacientes');
-        document.getElementById('form-medico').onsubmit = (e) => handleFormSubmit(e, 'medico', 'medicos');
-        document.getElementById('form-patologia').onsubmit = (e) => handleFormSubmit(e, 'patologia', 'patologias');
-        document.getElementById('form-tratamento').onsubmit = (e) => handleFormSubmit(e, 'tratamento', 'tratamentos');
+        function showToast(msg, type = "success") {
+            const container = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `p-4 mb-2 rounded-2xl shadow-lg text-white text-xs font-bold text-center transition-all ${type === 'success' ? 'bg-indigo-600' : 'bg-red-500'}`;
+            t.innerText = msg;
+            container.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 2500);
+        }
 
-        window.onload = () => {
-            document.getElementById('config-script-url').value = state.config.scriptUrl;
-            if (document.getElementById('medicines-container').children.length === 0) addMedicineRow();
-            renderAll();
-            if (state.config.scriptUrl) fetchFromGoogle();
-            setTimeout(refreshIcons, 300);
-        };
+        function exportData() {
+            const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = 'medfamilia_backup.json'; a.click();
+        }
+
+        // --- Eventos de Form ---
+        document.getElementById('form-paciente').onsubmit = (e) => handleForm(e, 'paciente');
+        document.getElementById('form-medico').onsubmit = (e) => handleForm(e, 'medico');
+        document.getElementById('form-patologia').onsubmit = (e) => handleForm(e, 'patologia');
+        document.getElementById('form-tratamento').onsubmit = (e) => handleForm(e, 'tratamento');
+
     </script>
 </body>
 </html>
